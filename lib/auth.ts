@@ -11,7 +11,58 @@ export const {
   signIn,
   signOut,
 } = NextAuth({
-  providers: [Google, Github, Kakao, Naver, Credentials],
+  providers: [
+    Google,
+    Github,
+    Kakao,
+    Naver,
+    Credentials({
+      credentials: {
+        email: {
+          label: 'Email',
+          type: 'email',
+          placeholder: 'email@bookmark.com',
+        },
+        password: {
+          label: 'Password',
+          type: 'password',
+          placeholder: 'password...',
+        },
+      },
+      async authorize(credentials) {
+        console.log('credentials>>', credentials);
+        return null;
+      },
+    }),
+  ],
+  callbacks: {
+    async signIn({ user, profile }) {
+      console.log('🚀 ~ profile:', profile);
+      console.log('🚀 ~ user:', user);
+      return true;
+    },
+    async jwt({ token, user }) {
+      // jwt 방식, GET /api/auth/callback/google에는 user없음!
+      if (user) {
+        token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token) {
+      }
+      return session;
+    },
+  },
+
+  trustHost: true,
+  jwt: { maxAge: 30 * 60 },
+  pages: {
+    // signIn: '/sign',
+    error: '/sign/error',
+  },
   session: {
     strategy: 'jwt',
   },
