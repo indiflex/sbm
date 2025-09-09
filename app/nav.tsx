@@ -7,6 +7,7 @@ import { use } from 'react';
 export default function Nav() {
   const session = use(auth());
   const didLogin = !!session?.user;
+  console.log('🚀 ~ session:', session?.user);
   return (
     <div className='flex items-center gap-5 py-1'>
       <Link href='/bookcase' className='btn-icon'>

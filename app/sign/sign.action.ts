@@ -8,6 +8,8 @@ export const login = async (provider: Provider, callback?: string) => {
   await signIn(provider, { redirectTo: callback || '/bookcase' });
 };
 
+export const loginNaver = async () => login('naver');
+
 export const logout = async () => {
-  await signOut({ redirectTo: '/' });
+  await signOut({ redirectTo: '/sign' }); // QQQ: '/'
 };
