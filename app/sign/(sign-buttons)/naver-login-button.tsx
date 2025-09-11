@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { loginNaver } from './sign.action';
+import { loginNaver } from '../sign.action';
 
 export function NaverLoginButton() {
   return (
