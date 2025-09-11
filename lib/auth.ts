@@ -67,6 +67,7 @@ export const {
 
       return true;
     },
+
     async jwt({ token, user, trigger, account, session }) {
       console.log('🚀 ~ account:', account);
       const userData = trigger === 'update' ? session : user;
@@ -77,6 +78,7 @@ export const {
       }
       return token;
     },
+
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id?.toString() || '';

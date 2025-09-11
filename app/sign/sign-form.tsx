@@ -2,12 +2,15 @@
 
 import LabelInput from '@/components/label-input';
 import { Button } from '@/components/ui/button';
+import type { ValidError } from '@/lib/validator';
+import { LoaderPinwheelIcon } from 'lucide-react';
 import Link from 'next/link';
-import { useReducer } from 'react';
+import { useActionState, useReducer } from 'react';
+import z from 'zod';
 import { authorize } from './sign.action';
 
 export default function SignForm() {
-  const [isSignin, toggleSign] = useReducer(pre => !pre, true);
+  const [isSignin, toggleSign] = useReducer(pre => !pre, false);
   return (
     <>
       {isSignin ? (
@@ -87,13 +90,37 @@ function SignIn({ toggleSign }: { toggleSign: () => void }) {
 }
 
 function SignUp({ toggleSign }: { toggleSign: () => void }) {
+  const [validError, makeRegist, isPending] = useActionState(
+    async (_preValidError: ValidError | undefined, formData: FormData) => {
+      const validator = z
+        .object({
+          email: z.email(),
+          passwd: z.string().min(6),
+          passwd2: z.string().min(6),
+          nickname: z.string().min(3),
+        })
+        .refine(
+          ({ passwd, passwd2 }) => passwd === passwd2,
+          'Passwords are not matched!'
+        )
+        .safeParse(Object.fromEntries(formData.entries()));
+
+      if (!validator.success) {
+        const err = z.treeifyError(validator.error).properties;
+        return err;
+      }
+    },
+    undefined
+  );
+
   return (
     <>
-      <form className='flex flex-col space-y-2'>
+      <form action={makeRegist} className='flex flex-col space-y-2'>
         <LabelInput
           label='email'
           type='email'
           name='email'
+          error={validError}
           placeholder='email@bookmark.com'
         />
 
@@ -101,6 +128,7 @@ function SignUp({ toggleSign }: { toggleSign: () => void }) {
           label='password'
           type='password'
           name='passwd'
+          error={validError}
           placeholder='your password..'
           className='my-3x'
         />
@@ -109,6 +137,7 @@ function SignUp({ toggleSign }: { toggleSign: () => void }) {
           label='password confirm'
           type='password'
           name='passwd2'
+          error={validError}
           placeholder='your password..'
           className='my-3x'
         />
@@ -117,12 +146,19 @@ function SignUp({ toggleSign }: { toggleSign: () => void }) {
           label='nickname'
           type='text'
           name='nickname'
+          error={validError}
           placeholder='your nickname..'
           className='my-3x'
         />
 
-        <Button type='submit' variant={'primary'} className='w-full'>
-          Sign Up
+        <Button
+          type='submit'
+          variant={'primary'}
+          className='w-full'
+          disabled={isPending}
+        >
+          {isPending ? 'Singing Up...' : 'Sign Up'}
+          {isPending && <LoaderPinwheelIcon className='animate-spin' />} Sign Up
         </Button>
       </form>
       <div className='mt-5 flex gap-10'>
