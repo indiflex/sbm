@@ -26,13 +26,14 @@ export const authorize = async (
     email: z.email(),
     passwd: z.string().min(6, 'More than 6 characters!'),
   });
-  const [err] = validate(zobj, formData);
+  const [err, data] = validate(zobj, formData);
   if (err) return err;
 
   try {
-    await signIn('credentials', formData);
+    // await signIn('credentials', formData);
+    await signIn('credentials', { ...data, redirectTo: '/bookcase' });
   } catch (error) {
-    console.log('🚀 ~ error:', error);
+    console.log('🚀 sign.action.authorize - error:', error);
     throw error;
   }
 };

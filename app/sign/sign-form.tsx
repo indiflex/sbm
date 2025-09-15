@@ -4,7 +4,8 @@ import LabelInput from '@/components/label-input';
 import { Button } from '@/components/ui/button';
 import { LoaderPinwheelIcon } from 'lucide-react';
 import Link from 'next/link';
-import { useActionState, useReducer } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useActionState, useEffect, useReducer, useRef } from 'react';
 import { authorize, regist } from './sign.action';
 
 export default function SignForm() {
@@ -21,10 +22,22 @@ export default function SignForm() {
 }
 
 function SignIn({ toggleSign }: { toggleSign: () => void }) {
+  const searchParams = useSearchParams();
+  const email = searchParams.get('email');
+
+  const passwdRef = useRef<HTMLInputElement>(null);
+
   const [validError, makeLogin, isPending] = useActionState(
     authorize,
     undefined
   );
+
+  useEffect(() => {
+    if (email) {
+      passwdRef.current?.focus();
+    }
+  }, [email]);
+
   return (
     <>
       <form action={makeLogin} className='flex flex-col space-y-3'>
@@ -32,8 +45,9 @@ function SignIn({ toggleSign }: { toggleSign: () => void }) {
           label='email'
           type='email'
           name='email'
+          focus={true}
           error={validError}
-          defaultValue={'indiflex1@gmail.com'}
+          defaultValue={email || ''}
           placeholder='email@bookmark.com'
         />
 
@@ -41,10 +55,9 @@ function SignIn({ toggleSign }: { toggleSign: () => void }) {
           label='password'
           type='password'
           name='passwd'
+          ref={passwdRef}
           error={validError}
-          defaultValue={'121212'}
           placeholder='your password..'
-          className='my-3x'
         />
 
         <div className='flex justify-between'>

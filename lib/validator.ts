@@ -18,7 +18,7 @@ export const validate = <T extends z.ZodObject>(
   formData: FormData
 ): [ValidError] | [undefined, z.core.output<T>] => {
   const ent = Object.fromEntries(formData.entries());
-  console.log('🚀 ~ ent:', ent);
+  // console.log('🚀 ~ ent:', ent);
   const validator = zobj.safeParse(ent);
 
   if (!validator.success) {
