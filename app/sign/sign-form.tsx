@@ -8,7 +8,7 @@ import { useActionState, useReducer } from 'react';
 import { authorize, regist } from './sign.action';
 
 export default function SignForm() {
-  const [isSignin, toggleSign] = useReducer(pre => !pre, false);
+  const [isSignin, toggleSign] = useReducer(pre => !pre, true);
   return (
     <>
       {isSignin ? (
@@ -33,7 +33,7 @@ function SignIn({ toggleSign }: { toggleSign: () => void }) {
           type='email'
           name='email'
           error={validError}
-          defaultValue={'jeonseongho@naver.com'}
+          defaultValue={'indiflex1@gmail.com'}
           placeholder='email@bookmark.com'
         />
 
@@ -79,6 +79,13 @@ function SignIn({ toggleSign }: { toggleSign: () => void }) {
   );
 }
 
+// const dummy = {
+//   email: 'indiflex1@gmail.com',
+//   passwd: '121212',
+//   passwd2: '121212',
+//   nickname: 'indiflex1',
+// };
+
 function SignUp({ toggleSign }: { toggleSign: () => void }) {
   const [validError, makeRegist, isPending] = useActionState(regist, undefined);
 
@@ -91,7 +98,18 @@ function SignUp({ toggleSign }: { toggleSign: () => void }) {
           name='email'
           focus={true}
           error={validError}
+          // defaultValue={dummy.email}
           placeholder='email@bookmark.com'
+        />
+
+        <LabelInput
+          label='nickname'
+          type='text'
+          name='nickname'
+          error={validError}
+          // defaultValue={dummy.nickname}
+          placeholder='your nickname..'
+          className='my-3x'
         />
 
         <LabelInput
@@ -99,6 +117,7 @@ function SignUp({ toggleSign }: { toggleSign: () => void }) {
           type='password'
           name='passwd'
           error={validError}
+          // defaultValue={dummy.passwd}
           placeholder='your password..'
           className='my-3x'
         />
@@ -108,16 +127,8 @@ function SignUp({ toggleSign }: { toggleSign: () => void }) {
           type='password'
           name='passwd2'
           error={validError}
+          // defaultValue={dummy.passwd2}
           placeholder='your password..'
-          className='my-3x'
-        />
-
-        <LabelInput
-          label='nickname'
-          type='text'
-          name='nickname'
-          error={validError}
-          placeholder='your nickname..'
           className='my-3x'
         />
 
