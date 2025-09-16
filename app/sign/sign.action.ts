@@ -5,17 +5,19 @@ import prisma from '@/lib/db';
 import { newToken } from '@/lib/utils';
 import { validate, type ValidError } from '@/lib/validator';
 import { hash } from 'bcryptjs';
+import { AuthError } from 'next-auth';
 import { redirect } from 'next/navigation';
 import z from 'zod';
 import { sendRegistCheck } from './mail.action';
 
-type Provider = 'google' | 'github' | 'naver' | 'kakao';
+export type Provider = 'google' | 'github' | 'naver' | 'kakao';
 
-export const login = async (provider: Provider, callback?: string) => {
+export const login = async (provider: Provider, callback?: string | null) => {
   await signIn(provider, { redirectTo: callback || '/bookcase' });
 };
 
-export const loginNaver = async () => login('naver');
+export const loginNaver = async (redirectTo?: string | null) =>
+  login('naver', redirectTo);
 
 // credential login (email, passwd)
 export const authorize = async (
@@ -30,10 +32,36 @@ export const authorize = async (
   if (err) return err;
 
   try {
+    const redirectTo = formData.get('redirectTo')?.toString() || '/bookcase';
+    console.log('🚀 ~ redirectTo:', redirectTo);
     // await signIn('credentials', formData);
-    await signIn('credentials', { ...data, redirectTo: '/bookcase' });
+    await signIn('credentials', { ...data, redirectTo });
   } catch (error) {
     console.log('🚀 sign.action.authorize - error:', error);
+    if (error instanceof AuthError) {
+      let typeErr: string;
+      switch (error.type) {
+        case 'AccessDenied':
+        case 'EmailSignInError':
+          typeErr = error.message.split('Read more')[0];
+          break;
+        case 'OAuthAccountNotLinked':
+          typeErr = `Already registed SNS Account`;
+          break;
+        case 'CredentialsSignin':
+          typeErr =
+            error.message.split('Read more')[0] ||
+            'Not match Email or Password!';
+          break;
+        default:
+          typeErr = error.message || 'Something went wrong!';
+      }
+
+      return {
+        email: { errors: [typeErr], value: data.email },
+        passwd: { errors: [], value: data.passwd },
+      } as ValidError;
+    }
     throw error;
   }
 };
@@ -89,6 +117,7 @@ export const findMemberByEmail = async (
       nickname: true,
       isadmin: true,
       emailcheck: true,
+      outdt: true,
       passwd,
     },
     where: { email },
