@@ -8,7 +8,6 @@ import { hash } from 'bcryptjs';
 import { AuthError } from 'next-auth';
 import { redirect } from 'next/navigation';
 import z from 'zod';
-import { sendRegistCheck } from './mail.action';
 
 export type Provider = 'google' | 'github' | 'naver' | 'kakao';
 
@@ -102,7 +101,15 @@ export const regist = async (
     data: { email, nickname, passwd, emailcheck },
   });
 
-  await sendRegistCheck(email, emailcheck);
+  // fetch
+  const { NEXT_PUBLIC_URL, INTERNAL_SECRET } = process.env;
+  fetch(`${NEXT_PUBLIC_URL}/api/sendmail`, {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${INTERNAL_SECRET}`,
+    },
+    body: JSON.stringify({ email, emailcheck }),
+  });
 
   redirect(`/sign/error?error=CheckEmail&email=${email}`);
 };

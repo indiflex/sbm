@@ -52,8 +52,7 @@ export const {
       const mbr = await findMemberByEmail(email, isCredential);
       console.log('🚀 ~ mbr:', mbr);
       if (mbr?.emailcheck) {
-        // TODO: emailcheck 다시 보내기! (: 가입 시 받은 이메일을 실수로 삭제!)
-        return `/sign/error?error=CheckEmail&email=${email}&oldEmailcheck=${mbr.emailcheck}`;
+        return `/sign/error?error=CheckEmail&email=${email}&emailcheck=${mbr.emailcheck}`;
       }
 
       if (isCredential) {
