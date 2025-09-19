@@ -1,7 +1,7 @@
 import { sendPasswordReset, sendRegistCheck } from '@/app/sign/mail.action';
 import { NextResponse, type NextRequest } from 'next/server';
 
-type SendMailBody = {
+export type SendMailBody = {
   email: string;
   emailcheck: string;
   nickname?: string;
