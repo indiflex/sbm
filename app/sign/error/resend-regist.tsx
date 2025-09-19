@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { useActionState } from 'react';
-import { resendResetPassword } from '../sign.action';
+import { resendRegist } from '../sign.action';
 
 type Props = {
   email: string;
@@ -11,7 +11,7 @@ type Props = {
 
 export default function ResendRegist({ email, emailcheck }: Props) {
   const [validError, sendResetMail, isPending] = useActionState(
-    resendResetPassword,
+    resendRegist,
     undefined
   );
 

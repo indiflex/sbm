@@ -108,7 +108,37 @@ export const regist = async (
   redirect(`/sign/error?error=CheckEmail&email=${email}`);
 };
 
-export const resendResetPassword = async (
+export const sendResetPassword = async (
+  _: ValidError | undefined,
+  formData: FormData
+) => {
+  const zobj = z.object({
+    email: z.email(),
+  });
+  const [err, data] = validate(zobj, formData);
+  if (err) return err;
+
+  const emailcheck = newToken();
+  const { email } = data;
+  const { nickname } = await prisma.member.update({
+    select: { nickname: true },
+    where: { email },
+    data: { emailcheck },
+  });
+
+  const rs = await sendmailByFetch({
+    email,
+    emailcheck,
+    nickname,
+    emailType: 'reset-password',
+  });
+
+  if (!rs.ok) return { email: { errors: ['Fail to send email!'] } };
+
+  redirect(`/sign/error?error=CheckEmail&email=${email}`);
+};
+
+export const resendRegist = async (
   _: ValidError | undefined,
   formData: FormData
 ) => {
@@ -131,11 +161,13 @@ export const resendResetPassword = async (
     data: { emailcheck: newEmailCheck },
   });
 
-  sendmailByFetch({
+  const rs = await sendmailByFetch({
     email,
     emailcheck: newEmailCheck,
-    emailType: 'reset-password',
   });
+  if (!rs.ok) return { email: { errors: ['Fail to send email!'] } };
+
+  redirect(`/sign/error?error=CheckEmail&email=${email}`);
 };
 
 const sendmailByFetch = async ({
@@ -145,7 +177,7 @@ const sendmailByFetch = async ({
   emailType = 'regist',
 }: SendMailBody) => {
   const { NEXT_PUBLIC_URL, INTERNAL_SECRET } = process.env;
-  fetch(`${NEXT_PUBLIC_URL}/api/sendmail`, {
+  return fetch(`${NEXT_PUBLIC_URL}/api/sendmail`, {
     method: 'POST',
     headers: {
       authorization: `Bearer ${INTERNAL_SECRET}`,

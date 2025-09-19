@@ -1,6 +1,8 @@
 import LabelInput from '@/components/label-input';
 import { Button } from '@/components/ui/button';
 import prisma from '@/lib/db';
+import { hash } from 'bcryptjs';
+import { redirect } from 'next/navigation';
 
 // /forgotpasswd/ADFF-SADF-sadf/
 export default async function ResetForgotPasswd({
@@ -15,13 +17,20 @@ export default async function ResetForgotPasswd({
     select: { nickname: true, emailcheck: true, email: true },
     where: { emailcheck },
   });
-  // compare emailcheck and db's emailcheck
-  // TODO: compare emailcheck!!(by crypto)
-  // if (!mbr) return <h1>Error</h1>;
 
-  const resetPassword = async () => {
+  if (emailcheck !== mbr?.emailcheck)
+    redirect('/sign/error?error=InvalidEmailCheck');
+
+  const resetPassword = async (formData: FormData) => {
     'use server';
+    
+    const passwd = await hash(formData.get('passwd'), 10);
+    await prisma.member.update({
+      where: {mbr.email},
+      data: {passwd, }
+    })
   };
+
   return (
     <div className='grid h-full place-items-center'>
       {/* <div className='w-96 rounded-md border p-5 shadow-md'> */}
