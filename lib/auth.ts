@@ -91,12 +91,12 @@ export const {
         token.image = userData.image;
         token.isadmin = userData.isadmin;
 
-        if (account) {
-          token.accessToken = account?.access_token;
-          token.accessTokenExpires =
-            Date.now() + (account.expires_in ?? 0) * 1000;
-          token.refreshToken = account.refresh_token;
-        }
+        // if (account) {
+        //   token.accessToken = account?.id_token;
+        //   token.accessTokenExpires =
+        //     Date.now() + (account.expires_in ?? 0) * 1000;
+        //   token.refreshToken = account.refresh_token;
+        // }
       }
       return token;
     },
