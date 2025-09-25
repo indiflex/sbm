@@ -19,12 +19,15 @@ export default function Nav() {
       <ThemeChanger />
 
       {didLogin ? (
-        <Link href='/my' className='overflow-hidden rounded-full border'>
+        <Link
+          href='/my'
+          className='relative h-[40px] w-[40px] overflow-hidden rounded-full border'
+        >
           <Image
             src={session.user?.image || DummyProfile}
             alt={session.user?.name || 'guest'}
-            width={40}
-            height={40}
+            unoptimized={process.env.NODE_ENV === 'development'}
+            fill
           />
         </Link>
       ) : (

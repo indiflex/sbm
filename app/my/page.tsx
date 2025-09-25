@@ -17,7 +17,7 @@ export default function My() {
   //   update(user);
   // };
 
-  const { name, email, image } = session.user;
+  const { name, image } = session.user;
   return (
     <div className='grid h-full place-items-center'>
       <div className='w-full rounded-md border p-5 text-center shadow-sm'>

@@ -1,5 +1,3 @@
-import { findMemberByEmail } from '@/app/sign/sign.action';
-import { compare } from 'bcryptjs';
 import NextAuth, { AuthError } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import Github from 'next-auth/providers/github';
@@ -7,7 +5,8 @@ import Google from 'next-auth/providers/google';
 import Kakao from 'next-auth/providers/kakao';
 import Naver from 'next-auth/providers/naver';
 import z from 'zod';
-import prisma from './db';
+import prisma, { findMemberByEmail } from './db';
+import { comparePassword } from './utils';
 import { validateObject } from './validator';
 
 export const {
@@ -61,7 +60,7 @@ export const {
         if (!mbr.passwd)
           throw authError('RegistedBySNS', 'OAuthAccountNotLinked');
 
-        const isValidPasswd = await compare(user.passwd ?? '', mbr.passwd);
+        const isValidPasswd = await comparePassword(user.passwd, mbr.passwd);
         if (!isValidPasswd)
           throw authError('Invalid Password!', 'CredentialsSignin');
       } else {
@@ -81,9 +80,10 @@ export const {
       return true;
     },
 
-    async jwt({ token, user, trigger, account, session }) {
-      if (account) console.log('🚀 ~ account:', account);
+    async jwt({ token, user, trigger, session }) {
+      // if (session) console.log('🚀 ~ session:', session);
       const userData = trigger === 'update' ? session : user;
+      // console.log('🚀 ~ userData:', userData);
       if (userData) {
         token.id = userData.id;
         token.email = userData.email;
@@ -98,6 +98,7 @@ export const {
         //   token.refreshToken = account.refresh_token;
         // }
       }
+      // console.log('🚀 ~ token:', token);
       return token;
     },
 
@@ -109,6 +110,7 @@ export const {
         session.user.image = token.image as string;
         session.user.isadmin = token.isadmin;
       }
+      // console.log('🚀 ~ session:', session);
       return session;
     },
   },

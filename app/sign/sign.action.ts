@@ -1,7 +1,7 @@
 'use server';
 
 import { auth, signIn, signOut } from '@/lib/auth';
-import prisma from '@/lib/db';
+import prisma, { findMemberByEmail } from '@/lib/db';
 import { newToken, uniqId } from '@/lib/utils';
 import { validate, type ValidError } from '@/lib/validator';
 import { hash } from 'bcryptjs';
@@ -219,26 +219,10 @@ const sendmailByFetch = async ({
   });
 };
 
-export const findMemberByEmail = async (
-  email: string,
-  passwd: boolean = false
-) =>
-  prisma.member.findUnique({
-    select: {
-      id: true,
-      nickname: true,
-      isadmin: true,
-      emailcheck: true,
-      image: true,
-      outdt: true,
-      passwd,
-    },
-    where: { email },
-  });
-
+export type UpdateProfileImageReturn = ReturnType<typeof updateProfileImage>;
 export const updateProfileImage = async (formData: FormData) => {
   const session = await auth();
-  if (!session?.user || !session.user.email) return {}; // throw new Error('Need Login!');
+  if (!session?.user || !session.user.email) throw new Error('Need Login!');
 
   const { id, email } = session.user;
   const ent = Object.fromEntries(formData.entries());
@@ -246,12 +230,12 @@ export const updateProfileImage = async (formData: FormData) => {
   const zobj = z.object({
     image: z
       .instanceof(File)
-      .refine(file => file.size <= 10 * 1024 * 1024, 'Under 10MB!')
+      .refine(file => file.size <= 10 * 1024 * 1024, 'Under 10MB plz!')
       .refine(file => file.type.startsWith('image/'), 'Upload Image only!'),
   });
 
   const [err, data] = validate(zobj, formData);
-  // console.log('🚀 ~ err:', err);
+  console.log('🚀 ~ err:', err);
   // console.log('🚀 ~ data:', data);
   if (err) return [err];
 
