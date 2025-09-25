@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
       { hostname: '*.kakaocdn.net' },
       { hostname: 'sbm.topician.com' },
       { hostname: 'localhost' },
+      { hostname: 'localhost:3000' },
     ],
   },
 };

@@ -4,7 +4,7 @@ import LabelInput from '@/components/label-input';
 import { Button } from '@/components/ui/button';
 import { LoaderPinwheelIcon } from 'lucide-react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useActionState, useEffect, useReducer, useRef } from 'react';
 import { authorize, regist } from './sign.action';
 
@@ -37,16 +37,19 @@ function SignIn({ toggleSign }: { toggleSign: () => void }) {
   const passwdRef = useRef<HTMLInputElement>(null);
   const rememberRef = useRef<HTMLInputElement>(null);
 
+  const router = useRouter();
+
   const [validError, makeLogin, isPending] = useActionState(
     authorize,
     undefined
   );
 
-  const makeLoginAction = (formData: FormData) => {
+  const makeLoginAction = async (formData: FormData) => {
     rememberMe();
 
     if (redirectTo) formData.set('redirectTo', redirectTo);
-    makeLogin(formData);
+    await makeLogin(formData);
+    router.refresh();
   };
 
   const rememberMe = () => {
