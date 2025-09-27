@@ -13,7 +13,8 @@ type Props = {
   } & User;
 };
 export default function ChangeProfile({ user }: Props) {
-  const { update } = useSession({ required: true });
+  // const { update } = useSession({ required: true });
+  const { update } = useSession();
   const [diffEmail, setDiffEmail] = useState(false);
 
   return (

@@ -1,6 +1,6 @@
 'use client';
 import type { UpdateProfileImageReturn } from '@/app/sign/sign.action';
-import { cn } from '@/lib/utils';
+import { cn, DummyProfile } from '@/lib/utils';
 import { useSession } from 'next-auth/react';
 import Image, { type StaticImageData } from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -107,6 +107,7 @@ export default function ImageUploader({ src, alt, changeImage }: Props) {
           className='rounded-full border'
           fill
           unoptimized={process.env.NODE_ENV === 'development'}
+          onError={() => setImg(DummyProfile)}
         />
 
         <input
