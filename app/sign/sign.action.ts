@@ -221,7 +221,7 @@ const sendmailByFetch = async ({
   });
 };
 
-export const sendEmailChangeCode = async (formData: FormData) => {
+export const sendEmailChangeCode_일괄저장 = async (formData: FormData) => {
   const session = await auth();
   if (!session?.user || !session.user.email) throw new Error('Need Login!');
 
@@ -291,7 +291,7 @@ export const sendEmailChangeCode = async (formData: FormData) => {
         data: { emailcheck: null },
       });
     },
-    5000 // QQQ: 2 * 60 * 1000
+    2 * 60 * 1000
   );
 
   await sendmailByFetch({
@@ -342,4 +342,104 @@ export const updateProfileImage = async (formData: FormData) => {
   revalidatePath('/profiles');
 
   return [null, mbr];
+};
+
+export const updateNickname = async (formData: FormData) => {
+  const session = await auth();
+  if (!session?.user || !session.user.email) throw new Error('Need Login!');
+
+  const { email } = session.user;
+
+  const zobj = z.object({
+    nickname: z.string().min(3),
+  });
+
+  const [err, data] = validate(zobj, formData);
+  if (err) return [err, null] as const;
+
+  const { nickname } = data;
+  const mbr = await prisma.member.update({
+    where: { email },
+    data: { nickname },
+  });
+  console.log('🚀 ~ mbr:', mbr);
+  return [err, mbr] as const;
+};
+
+export const sendEmailChangeCode = async (formData: FormData) => {
+  const session = await auth();
+  if (!session?.user || !session.user.email) throw new Error('Need Login!');
+
+  const { email, name } = session.user;
+  const mbr = await findMemberByEmail(email);
+
+  const zobj = z.object({
+    newEmail: z.email(),
+  });
+  const [err, data] = validate(zobj, formData);
+  if (err) return err;
+
+  const { newEmail } = data;
+  const existsErr = await existsEmail(newEmail, 'newEmail');
+  if (existsErr) return existsErr;
+
+  const emailcheck = uniqNumId();
+  await prisma.member.update({
+    where: { email },
+    data: { emailcheck },
+  });
+
+  setTimeout(
+    async () => {
+      await prisma.member.update({
+        where: { email },
+        data: { emailcheck: null },
+      });
+    },
+    2 * 60 * 1000
+  );
+
+  await sendmailByFetch({
+    email,
+    emailcheck,
+    nickname: name || '',
+    emailType: 'email-change-code',
+  });
+};
+
+export const updateEmail = async (formData: FormData) => {
+  const session = await auth();
+  if (!session?.user || !session.user.email) throw new Error('Need Login!');
+
+  console.log('****>>', Object.fromEntries(formData.entries()));
+  const { email } = session.user;
+  const mbr = await findMemberByEmail(email);
+  if (!mbr || !mbr.emailcheck || mbr.emailcheck.length !== 5) {
+    return [
+      {
+        emailChangeCode: { errors: ['Invalid Code!'] },
+      } as ValidError,
+      null,
+    ] as const;
+  }
+
+  const zobj = z.object({
+    newEmail: z.email(),
+    // emailChangeCode: z.literal(mbr.emailcheck, 'Invalid Code!'),
+    emailChangeCode: z.literal(mbr.emailcheck),
+  });
+  const [err, data] = validate(zobj, formData);
+  console.log('🚀 ~ err:', err);
+  if (err) return [err, null] as const;
+
+  const { newEmail } = data;
+  const existsErr = await existsEmail(newEmail, 'newEmail');
+  if (existsErr) return [existsErr, null] as const;
+
+  const newMbr = await prisma.member.update({
+    where: { email },
+    data: { email: newEmail, emailcheck: null },
+  });
+  console.log('🚀 ~ newMbr:', newMbr);
+  return [null, newMbr] as const;
 };

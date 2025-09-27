@@ -1,14 +1,15 @@
 'use client';
 
+import LabelEditor from '@/components/label-editor';
 import LabelInput from '@/components/label-input';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import type { ValidError } from '@/lib/validator';
 import { CheckLineIcon, UndoDotIcon } from 'lucide-react';
 import type { User } from 'next-auth';
 import { useSession } from 'next-auth/react';
-import { useActionState, useReducer, useState } from 'react';
-import { sendEmailChangeCode } from '../sign/sign.action';
+import { useRouter } from 'next/navigation';
+import { useReducer } from 'react';
+import { updateNickname } from '../sign/sign.action';
+import EmailChanger from './email-changer';
 
 type Props = {
   user: {
@@ -18,68 +19,38 @@ type Props = {
 export default function ChangeProfile({ user }: Props) {
   // const { update } = useSession({ required: true });
   const { update } = useSession();
-  const [diffEmail, setDiffEmail] = useState(false);
-  const [didSendCode, toggleSendCode] = useReducer(pre => !pre, true); // QQQ: false
+  const router = useRouter();
+  const [isEditingEmail, toggleEditingEmail] = useReducer(pre => !pre, true); // QQQ: false
 
-  const [emailError, sendEmailCode, isEmailPending] = useActionState(
-    async (_: ValidError | undefined, formData: FormData) => {
-      const err = await sendEmailChangeCode(formData);
-      console.log('🚀 ~ err:', err);
-      if (err) return err;
-      toggleSendCode();
-    },
-    undefined
-  );
+  const changeNickname = async (formData: FormData) => {
+    const ent = Object.fromEntries(formData.entries());
+    console.log('🚀 ~ ent:', ent);
+    const [err, mbr] = await updateNickname(formData);
+    if (err) return err;
+    console.log('🚀 ~ mbr:', mbr);
+    await update(mbr);
+    router.refresh();
+  };
 
   return (
-    <form className='space-y-3 text-left'>
-      <LabelInput
+    <div className='space-y-3 text-left'>
+      <LabelEditor
         label='nickname'
         name='nickname'
         defaultValue={user.name || ''}
-        error={emailError}
+        saveAction={changeNickname}
       />
 
-      <div
-        className={cn(
-          { 'mt-5': didSendCode, 'mb-7': !didSendCode },
-          'flex items-end gap-2'
-        )}
-      >
-        <LabelInput
-          label='email'
-          name='newEmail'
-          defaultValue={user.email || ''}
-          onChange={e => setDiffEmail(e.target.value !== user.email)}
-          className='w-full'
-          error={emailError}
-        />
-        {diffEmail && (
-          <Button
-            formAction={sendEmailCode}
-            variant={'success'}
-            disabled={isEmailPending}
-          >
-            {didSendCode ? 'Resend' : 'Send'} Verify Code
-          </Button>
-        )}
-      </div>
-      {didSendCode && (
-        <div className='mb-7 flex items-end gap-3'>
-          <LabelInput
-            label='Email change code (until 2 min)'
-            type='text'
-            name='emailChangeCode'
-            placeholder='input code...'
-          />
-          <Button
-            formAction={sendEmailCode}
-            variant={'success'}
-            disabled={isEmailPending}
-          >
-            Confirm Code
-          </Button>
-        </div>
+      {isEditingEmail ? (
+        <EmailChanger email={user.email} toggleEditing={toggleEditingEmail} />
+      ) : (
+        <Button
+          onClick={toggleEditingEmail}
+          variant={'success'}
+          className='mt-3'
+        >
+          Change {user.email}
+        </Button>
       )}
 
       <LabelInput
@@ -109,6 +80,6 @@ export default function ChangeProfile({ user }: Props) {
           <CheckLineIcon /> Save
         </Button>
       </div>
-    </form>
+    </div>
   );
 }

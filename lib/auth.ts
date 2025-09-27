@@ -13,6 +13,7 @@ export const {
   auth,
   signIn,
   signOut,
+  unstable_update,
 } = NextAuth({
   providers: [
     Google,
@@ -82,7 +83,7 @@ export const {
     async jwt({ token, user, trigger, session }) {
       // if (session) console.log('🚀 ~ session:', session);
       const userData = trigger === 'update' ? session : user;
-      // console.log('🚀 ~ userData:', userData);
+      if (trigger === 'update') console.log('🚀 update - userData:', userData);
       if (userData) {
         token.id = userData.id;
         token.email = userData.email;

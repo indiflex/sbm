@@ -83,7 +83,7 @@ const sendMail = async (
   TRANS.sendMail({
     from: FROM,
     to,
-    bcc: 'indiflex.sico@gmail.com', // QQQ
+    // bcc: 'indiflex.sico@gmail.com',
     subject,
     html,
     attachments,
