@@ -371,7 +371,6 @@ export const sendEmailChangeCode = async (formData: FormData) => {
   if (!session?.user || !session.user.email) throw new Error('Need Login!');
 
   const { email, name } = session.user;
-  const mbr = await findMemberByEmail(email);
 
   const zobj = z.object({
     newEmail: z.email(),
@@ -400,7 +399,7 @@ export const sendEmailChangeCode = async (formData: FormData) => {
   );
 
   await sendmailByFetch({
-    email,
+    email: newEmail,
     emailcheck,
     nickname: name || '',
     emailType: 'email-change-code',
@@ -442,4 +441,61 @@ export const updateEmail = async (formData: FormData) => {
   });
   console.log('🚀 ~ newMbr:', newMbr);
   return [null, newMbr] as const;
+};
+
+export const updatePassword = async (formData: FormData) => {
+  const session = await auth();
+  if (!session?.user || !session.user.email) throw new Error('Need Login!');
+
+  console.log('****>>', Object.fromEntries(formData.entries()));
+  const { email } = session.user;
+  const mbr = await findMemberByEmail(email);
+
+  const zobj = z
+    .object({
+      curr_passwd: z.string().min(6).optional(),
+      passwd: z.string().min(6),
+      passwd2: z.string().min(6),
+    })
+    .superRefine(async ({ curr_passwd, passwd, passwd2 }, ctx) => {
+      let message: string = '';
+      let path: string[] = ['passwd2'];
+
+      const isMatchPassword = await comparePassword(
+        mbr?.passwd || '',
+        curr_passwd || ''
+      );
+      if (!isMatchPassword) {
+        message = 'Not Match the current password!';
+        path = ['curr_passwd'];
+      } else if (!passwd || !passwd2) message = 'Input the passwords!';
+      else if (passwd !== passwd2) message = 'Not Match the password confirm!';
+
+      if (message) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message,
+          path,
+        });
+      }
+    });
+
+  const val = await zobj.parseAsync(formData);
+
+  const [err, data] = validate(zobj, formData);
+  console.log('🚀 ~ err data:', err, data);
+  if (err) return err;
+
+  const { newEmail, nickname, curr_passwd } = data;
+  if (mbr?.passwd && curr_passwd) {
+    const validCurrPasswd = await comparePassword(mbr?.passwd, curr_passwd);
+    if (!validCurrPasswd)
+      return {
+        ...dataErr,
+        curr_passwd: {
+          errors: ['Invalid current password!'],
+          value: curr_passwd,
+        },
+      };
+  }
 };
