@@ -1,13 +1,12 @@
 import ImageUploader from '@/components/image-uploader';
 import SignOutButton from '@/components/signout-button';
-import { Button } from '@/components/ui/button';
 import { auth } from '@/lib/auth';
 import DummyProfile from '@/public/profile_dummy.png';
-import { FileOutputIcon } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { use } from 'react';
 import { updateProfileImage } from '../sign/sign.action';
 import ChangeProfile from './change-profile';
+import WithdrawButton from './withdraw-button';
 
 export default function My() {
   const session = use(auth());
@@ -30,17 +29,17 @@ export default function My() {
               alt={name}
               changeImage={updateProfileImage}
             />
-
-            <div>
-              <SignOutButton name={name} />
-              <Button variant={'destructive'} className='mt-3 w-full'>
-                <FileOutputIcon /> Widthrow BookMark
-              </Button>
-            </div>
           </div>
 
           <div className='col-span-2 border p-3'>
             <ChangeProfile user={session.user} />
+          </div>
+        </div>
+
+        <div className='mt-5 grid grid-cols-3 gap-2'>
+          <SignOutButton name={name} />
+          <div className='col-span-2 text-right'>
+            <WithdrawButton />
           </div>
         </div>
       </div>

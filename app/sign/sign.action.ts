@@ -448,7 +448,7 @@ export const updatePassword = async (formData: FormData) => {
   const session = await auth();
   if (!session?.user || !session.user.email) throw new Error('Need Login!');
 
-  console.log('****>>', Object.fromEntries(formData.entries()));
+  // console.log('****>>', Object.fromEntries(formData.entries()));
   const { email } = session.user;
   const mbr = await findMemberByEmail(email, true);
 
@@ -492,4 +492,19 @@ export const updatePassword = async (formData: FormData) => {
     where: { email },
     data: { passwd },
   });
+};
+
+export const withdraw = async () => {
+  const session = await auth();
+  if (!session?.user || !session.user.email) throw new Error('Need Login!');
+
+  // console.log('****>>', Object.fromEntries(formData.entries()));
+  const { email } = session.user;
+  const outdt = new Date().toISOString().split('T')[0];
+  await prisma.member.update({
+    where: { email },
+    data: { outdt },
+  });
+
+  await logout();
 };
