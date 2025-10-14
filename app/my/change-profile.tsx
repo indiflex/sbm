@@ -23,8 +23,8 @@ export default function ChangeProfile({ user }: Props) {
   const [isEditingEmail, toggleEditingEmail] = useReducer(pre => !pre, false);
   const [isEditingPassword, toggleEditingPassword] = useReducer(
     pre => !pre,
-    true
-  ); // QQQ (false)
+    false
+  );
 
   const changeNickname = async (formData: FormData) => {
     const ent = Object.fromEntries(formData.entries());

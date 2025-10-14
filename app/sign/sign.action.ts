@@ -5,11 +5,12 @@ import prisma, { findMemberByEmail } from '@/lib/db';
 import { newToken, uniqId, uniqNumId } from '@/lib/utils';
 import {
   comparePassword,
+  encryptPassword,
   existsEmail,
   validate,
+  validateAsync,
   type ValidError,
 } from '@/lib/validator';
-import { hash } from 'bcryptjs';
 import { existsSync, mkdirSync } from 'fs';
 import { writeFile } from 'fs/promises';
 import { AuthError } from 'next-auth';
@@ -102,7 +103,7 @@ export const regist = async (
   const existsErr = existsEmail(email);
   if (existsErr) return existsErr;
 
-  const passwd = await hash(orgPasswd, 10);
+  const passwd = await encryptPassword(orgPasswd);
   const emailcheck = newToken();
   await prisma.member.create({
     data: { email, nickname, passwd, emailcheck },
@@ -164,7 +165,7 @@ export const resetPassword = async (
   if (err) return err;
 
   const { email, passwd2, emailcheck } = data;
-  const passwd = await hash(passwd2, 10);
+  const passwd = await encryptPassword(passwd2);
   await prisma.member.update({
     where: { email, emailcheck },
     data: { passwd, emailcheck: null },
@@ -263,7 +264,7 @@ export const sendEmailChangeCode_일괄저장 = async (formData: FormData) => {
 
   const { newEmail, nickname, curr_passwd } = data;
   if (mbr?.passwd && curr_passwd) {
-    const validCurrPasswd = await comparePassword(mbr?.passwd, curr_passwd);
+    const validCurrPasswd = await comparePassword(curr_passwd, mbr?.passwd);
     if (!validCurrPasswd)
       return {
         ...dataErr,
@@ -449,53 +450,46 @@ export const updatePassword = async (formData: FormData) => {
 
   console.log('****>>', Object.fromEntries(formData.entries()));
   const { email } = session.user;
-  const mbr = await findMemberByEmail(email);
+  const mbr = await findMemberByEmail(email, true);
 
   const zobj = z
     .object({
-      curr_passwd: z.string().min(6).optional(),
+      curr_passwd: z.string().optional(),
       passwd: z.string().min(6),
       passwd2: z.string().min(6),
     })
     .superRefine(async ({ curr_passwd, passwd, passwd2 }, ctx) => {
-      let message: string = '';
-      let path: string[] = ['passwd2'];
+      const preIssues = ctx.issues;
+      ctx.issues = [];
 
       const isMatchPassword = await comparePassword(
-        mbr?.passwd || '',
-        curr_passwd || ''
+        curr_passwd || '',
+        mbr?.passwd || ''
       );
-      if (!isMatchPassword) {
-        message = 'Not Match the current password!';
-        path = ['curr_passwd'];
-      } else if (!passwd || !passwd2) message = 'Input the passwords!';
-      else if (passwd !== passwd2) message = 'Not Match the password confirm!';
-
-      if (message) {
+      if (!isMatchPassword)
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message,
-          path,
+          code: 'custom',
+          message: 'Not Match the current password!',
+          path: ['curr_passwd'],
         });
-      }
+
+      if (passwd !== passwd2)
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Not Match the password confirm!',
+          path: ['passwd2'],
+        });
+
+      ctx.issues = [...ctx.issues, ...preIssues];
     });
 
-  const val = await zobj.parseAsync(formData);
-
-  const [err, data] = validate(zobj, formData);
-  console.log('🚀 ~ err data:', err, data);
+  const [err, data] = await validateAsync(zobj, formData);
+  // console.log('🚀 ~ err:', err);
   if (err) return err;
 
-  const { newEmail, nickname, curr_passwd } = data;
-  if (mbr?.passwd && curr_passwd) {
-    const validCurrPasswd = await comparePassword(mbr?.passwd, curr_passwd);
-    if (!validCurrPasswd)
-      return {
-        ...dataErr,
-        curr_passwd: {
-          errors: ['Invalid current password!'],
-          value: curr_passwd,
-        },
-      };
-  }
+  const passwd = await encryptPassword(data.passwd);
+  await prisma.member.update({
+    where: { email },
+    data: { passwd },
+  });
 };

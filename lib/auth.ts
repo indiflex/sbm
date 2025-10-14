@@ -90,14 +90,8 @@ export const {
         token.name = userData.name || userData.nickname;
         token.image = userData.image;
         token.isadmin = userData.isadmin;
-
-        // if (account) {
-        //   token.accessToken = account?.id_token;
-        //   token.accessTokenExpires =
-        //     Date.now() + (account.expires_in ?? 0) * 1000;
-        //   token.refreshToken = account.refresh_token;
-        // }
       }
+      token.exp = Math.floor(Date.now() / 1000) + 10 * 60;
       // console.log('🚀 ~ token:', token);
       return token;
     },
@@ -109,6 +103,7 @@ export const {
         session.user.email = token.email as string;
         session.user.image = token.image as string;
         session.user.isadmin = token.isadmin;
+        if (token.exp) session.expires = new Date(token.exp * 1000);
       }
       // console.log('🚀 ~ session:', session);
       return session;
@@ -116,7 +111,7 @@ export const {
   },
 
   trustHost: true,
-  jwt: { maxAge: 30 * 60 },
+  // jwt: { maxAge: 30 * 60 },
   pages: {
     signIn: '/sign',
     error: '/sign/error',
