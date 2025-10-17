@@ -10,7 +10,7 @@ export function GoogleLoginButton() {
     <Button
       onClick={() => login('google')}
       variant='outline'
-      className='h-12 w-full gap-2 rounded-md border border-gray-300 bg-white text-gray-900 hover:bg-gray-50'
+      className='h-12 w-full gap-2 rounded-md border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 dark:text-white'
     >
       <svg
         className='h-6 w-6'

@@ -15,7 +15,7 @@ export function NaverLoginButton({
     <Button
       onClick={makeNaverLogin}
       variant='outline'
-      className='h-12 w-full gap-2 bg-[#03C75A] text-white hover:bg-[#02b155]'
+      className='h-12 w-full gap-2 bg-[#03C75A] hover:bg-[#02b155]'
     >
       <svg
         xmlns='http://www.w3.org/2000/svg'
@@ -26,7 +26,7 @@ export function NaverLoginButton({
       >
         <path d='M4 4h5.37l5.26 8.28V4H20v16h-5.37l-5.26-8.28V20H4z' />
       </svg>
-      <span className='font-medium text-sm'>Naver</span>
+      <span className='font-medium text-sm text-white'>Naver</span>
     </Button>
   );
 }

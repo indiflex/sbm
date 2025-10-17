@@ -12,6 +12,10 @@ export type SendMailBody = {
   emailType?: 'regist' | 'reset-password' | 'email-change-code';
 };
 
+export async function GET() {
+  return Response.json({}, { status: 404, statusText: 'Not Founded' });
+}
+
 // POST /api/sendmail
 export async function POST(req: NextRequest) {
   const {

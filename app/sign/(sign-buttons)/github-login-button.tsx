@@ -8,7 +8,8 @@ export function GithubLoginButton() {
   return (
     <Button
       onClick={() => makeLogin('github')}
-      className='h-12 w-full gap-2 rounded-md bg-[#181717] text-white hover:bg-black'
+      variant={'outline'}
+      className='h-12 w-full gap-2 rounded-md bg-[#181717] text-white hover:bg-black hover:text-white'
     >
       <svg
         xmlns='http://www.w3.org/2000/svg'

@@ -11,7 +11,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { AlertTriangleIcon, FileOutputIcon } from 'lucide-react';
 import { useTransition } from 'react';
 import { withdraw } from '../sign/sign.action';
@@ -48,7 +49,10 @@ export default function WithdrawButton() {
           <AlertDialogAction
             onClick={makeWithdraw}
             disabled={isPending}
-            className='bg-red-600 hover:bg-red-700'
+            className={cn(
+              'bg-red-600x hover:bg-red-700x',
+              buttonVariants({ variant: 'destructive' })
+            )}
           >
             Continue
           </AlertDialogAction>

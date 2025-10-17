@@ -7,6 +7,8 @@ declare module 'next-auth' {
       isadmin?: boolean;
     } & DefaultSession['user'];
     expires: Date;
+    accessToken: string;
+    refreshToken: string;
   }
 
   interface User {
