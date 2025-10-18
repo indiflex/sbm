@@ -20,3 +20,34 @@ export const findMemberByEmail = async (
     },
     where: { email },
   });
+
+export type Member = Awaited<ReturnType<typeof findMemberById>>;
+
+export type MemberWithCount = Awaited<
+  ReturnType<typeof findMemberByIdWithCount>
+>;
+
+export const findMemberById = async (id: number | string) =>
+  prisma.member.findUnique({
+    select: {
+      id: true,
+      email: true,
+      nickname: true,
+      image: true,
+      isadmin: true,
+    },
+    where: { id: Number(id) },
+  });
+
+export const findMemberByIdWithCount = async (id: number | string) =>
+  prisma.member.findUnique({
+    where: { id: Number(id) },
+    select: {
+      id: true,
+      email: true,
+      nickname: true,
+      image: true,
+      isadmin: true,
+      _count: { select: { Book: true, Mark: true } },
+    },
+  });
