@@ -4,7 +4,7 @@ import { use } from 'react';
 
 export default function Bookcase() {
   const session = use(auth());
-  console.log('🚀 ~ session:', session);
+  // console.log('🚀 ~ session:', session);
   const didLogin = !!session?.user?.email;
   if (!session?.user?.name) redirect('/');
 

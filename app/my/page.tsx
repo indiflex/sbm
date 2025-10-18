@@ -10,7 +10,7 @@ import WithdrawButton from './withdraw-button';
 
 export default function My() {
   const session = use(auth());
-  console.log('🚀 ~ session:', session);
+  // console.log('🚀 my.session:', session);
   if (!session?.user?.name) redirect('/sign');
 
   // const updateInfo = async () => {

@@ -40,7 +40,7 @@ export async function middleware(req: NextRequest) {
   // }
 
   const exp = token.exp ? token.exp * 1000 : 0;
-  console.log('🚀 ----> exp:', new Date(exp).toLocaleString());
+  // console.log('🚀 ----> exp:', new Date(exp).toLocaleString());
   if (exp - Date.now() < MAX_AGE * 1000 - REFRESH_THRESHOLD) {
     const res = NextResponse.next();
     const newToken = await encode({
