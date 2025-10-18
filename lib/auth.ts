@@ -8,6 +8,8 @@ import z from 'zod';
 import prisma, { findMemberByEmail } from './db';
 import { comparePassword, validateObject } from './validator';
 
+export const MAX_AGE = 30 * 60;
+
 export const {
   handlers: { GET, POST },
   auth,
@@ -16,7 +18,15 @@ export const {
   unstable_update,
 } = NextAuth({
   providers: [
-    Google,
+    Google({
+      authorization: {
+        params: {
+          prompt: 'consent',
+          access_type: 'offline',
+          response_type: 'code',
+        },
+      },
+    }),
     Github,
     Kakao,
     Naver,
@@ -45,6 +55,7 @@ export const {
       console.log('🚀 ~ isCredential:', isCredential);
       console.log('🚀 ~ profile:', profile);
       console.log('🚀 ~ user:', user);
+      console.log('🚀 ~ account:', account);
       const { email, name: nickname, image } = user;
       if (!email) return false;
 
@@ -91,7 +102,7 @@ export const {
         token.image = userData.image;
         token.isadmin = userData.isadmin;
       }
-      token.exp = Math.floor(Date.now() / 1000) + 10 * 60;
+      // token.exp = Math.floor(Date.now() / 1000) + 10 * 60;
       // console.log('🚀 ~ token:', token);
       return token;
     },
@@ -103,7 +114,7 @@ export const {
         session.user.email = token.email as string;
         session.user.image = token.image as string;
         session.user.isadmin = token.isadmin;
-        if (token.exp) session.expires = new Date(token.exp * 1000);
+        // if (token.exp) session.expires = new Date(token.exp * 1000);
       }
       // console.log('🚀 ~ session:', session);
       return session;
@@ -111,13 +122,15 @@ export const {
   },
 
   trustHost: true,
-  jwt: { maxAge: 30 * 60 },
+  jwt: { maxAge: MAX_AGE },
   pages: {
     signIn: '/sign',
     error: '/sign/error',
   },
   session: {
     strategy: 'jwt',
+    maxAge: MAX_AGE, // default 1mon
+    // updateAge: 10 * 60, // 쿠키 굽는 단위 시간(10min)
   },
 });
 
