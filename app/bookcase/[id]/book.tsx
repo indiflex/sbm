@@ -1,9 +1,15 @@
 import IconLabel from '@/components/icon-label';
+import ToolTip from '@/components/tool-tip';
 import { Button } from '@/components/ui/button';
 import { auth } from '@/lib/auth';
 import { findBookWithMarkById, type BookAllColumn } from '@/lib/db';
 import { cn } from '@/lib/utils';
-import { MoreHorizontalIcon, PlusIcon, UserRoundPlusIcon } from 'lucide-react';
+import {
+  CopyXIcon,
+  MoreHorizontalIcon,
+  PlusIcon,
+  UserRoundPlusIcon,
+} from 'lucide-react';
 import { use } from 'react';
 import Mark from './mark';
 
@@ -26,7 +32,7 @@ export default function Book({ id, book }: Props) {
 
   return (
     <div className='flex w-80 flex-shrink-0 flex-col justify-start rounded-lg bg-slate-200 pl-2'>
-      <div className='flex items-center justify-between'>
+      <div className='flex items-center justify-between pr-2'>
         <h1
           className={cn(
             'truncate p-2 font-semibold text-xl tracking-tighter',
@@ -66,15 +72,24 @@ export default function Book({ id, book }: Props) {
       <div className='max-h-full space-y-2 overflow-y-scroll pr-2 pb-3'>
         <Mark />
         <Mark />
+        <Mark />
+        <Mark />
+        <Mark />
       </div>
       {isMine && (
-        <div className='my-1 flex justify-between font-medium'>
+        <div className='my-1 flex items-center justify-between pr-2 font-medium'>
           <Button
             variant={'ghost'}
             className='flex w-[80%] justify-start font-semibold text-lg hover:bg-slate-300'
           >
             <PlusIcon /> Add a Mark
           </Button>
+
+          {withdel && (
+            <ToolTip content={'With Del'}>
+              <CopyXIcon className='text-red-500' />
+            </ToolTip>
+          )}
         </div>
       )}
     </div>
