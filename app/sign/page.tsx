@@ -1,5 +1,6 @@
 /** biome-ignore-all lint/correctness/useJsxKeyInIterable: img tag */
 /** biome-ignore-all lint/performance/noImgElement: img tag */
+
 import Divider from '@/components/divider';
 import { use } from 'react';
 import { GithubLoginButton } from './(sign-buttons)/github-login-button';

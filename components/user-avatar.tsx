@@ -2,6 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { findMemberByIdWithCount, type MemberWithCount } from '@/lib/db';
 import { DummyProfileFile } from '@/lib/utils';
 import { use } from 'react';
+import { Button } from './ui/button';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './ui/hover-card';
 
 type Props =
@@ -31,14 +32,19 @@ export default function UserAvatar({ id, member, withName }: Props) {
     <div className='flex items-center gap-1'>
       <HoverCard>
         <HoverCardTrigger asChild>
-          <Avatar>
-            <AvatarImage src={mbr.image || DummyProfileFile} />
-            <AvatarFallback className='text-xl'>
-              {mbr.nickname.substring(0, 2)}
-            </AvatarFallback>
-          </Avatar>
+          <Button
+            variant='link'
+            className='touch-none md:pointer-events-auto md:touch-auto'
+          >
+            <Avatar>
+              <AvatarImage src={mbr.image || DummyProfileFile} />
+              <AvatarFallback className='text-xl'>
+                {mbr.nickname.substring(0, 2)}
+              </AvatarFallback>
+            </Avatar>
+          </Button>
         </HoverCardTrigger>
-        <HoverCardContent className='w-auto max-w-80'>
+        <HoverCardContent side='right' className='w-auto max-w-80'>
           <div className='flex justify-between gap-1'>
             <div className='w-20'>
               <Avatar className='h-16 w-16'>

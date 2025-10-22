@@ -30,22 +30,23 @@ export const saveBook = async (formData: FormData) => {
   if (err) return err;
 
   const id = Number(formData.get('id'));
-
+  const ispublic = data.ispublic === 'on';
+  const withdel = data.withdel === 'on';
   if (id) {
     await prisma.book.update({
       where: { id },
       data: {
         ...data,
-        ispublic: data.ispublic === 'on',
-        withdel: !!data.withdel,
+        ispublic,
+        withdel,
       },
     });
   } else {
     await prisma.book.create({
       data: {
         ...data,
-        ispublic: data.ispublic === 'on',
-        withdel: !!data.withdel,
+        ispublic,
+        withdel,
         member,
       },
     });
