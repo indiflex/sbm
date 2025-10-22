@@ -40,13 +40,13 @@ export default function BookDialog({
   book?: BookData;
 }>) {
   const router = useRouter();
-  const [ispublic, setPublic] = useState('indeterminate');
+  const [ispublic, setPublic] = useState(false);
   const [withdel, setWithdel] = useState(false);
 
   const [validError, save, isPending] = useActionState(
     async (_: ValidError | undefined, formData: FormData) => {
       const err = await saveBook(formData);
-      console.log('🚀 ~ err:', err);
+      console.log('🚀 ~ err:', err, ispublic);
       if (err) {
         return err;
       }
@@ -58,9 +58,9 @@ export default function BookDialog({
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
-    console.log('xxxxxxx>>', book, validError);
+    console.log('xxxxxxx>>', book, validError?.ispublic);
     if (book) {
-      // setPublic(book.ispublic || validError?.ispublic?.value);
+      setPublic(book.ispublic || !!validError?.ispublic?.value);
       // setWithdel(book.withdel || !!validError?.withdel?.value);
     }
   }, [validError]);
@@ -92,7 +92,7 @@ export default function BookDialog({
                 id='ispublic'
                 name='ispublic'
                 checked={ispublic}
-                onCheckedChange={setPublic}
+                onCheckedChange={checked => setPublic(!!checked)}
               />
               <Label htmlFor='ispublic' className='cursor-pointer'>
                 Public {ispublic && 'XX'}
