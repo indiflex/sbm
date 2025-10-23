@@ -65,13 +65,13 @@ export default function Book({ id, book }: Props) {
           ispublic && (
             <Button
               variant={'ghost'}
-              className='font-semibold text-lg hover:bg-slate-300'
+              className='font-semibold hover:bg-slate-200'
             >
               <IconLabel
-                icon={<UserRoundPlusIcon className='text-green-500' />}
-                noti={'success'}
+                icon={<UserRoundPlusIcon className='size-6 text-green-500' />}
+                noti='destructive'
               >
-                <small>28</small>
+                27
               </IconLabel>
             </Button>
           )

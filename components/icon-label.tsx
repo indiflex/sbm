@@ -25,11 +25,11 @@ export default function IconLabel({
         <small
           className={cn(
             'absolute top-0 right-0 min-w-5 rounded-full p-0 text-center text-sm text-white tracking-tighter ring-1',
-            `translate-x-2.5 translate-y-[-0.4rem]`,
+            `translate-x-3.5 translate-y-[-0.4rem]`,
             {
               'bg-black': noti === 'default',
-              'bg-gray-500': noti === 'muted',
-              'bg-red-500': noti === 'destructive',
+              'bg-muted-foreground': noti === 'muted',
+              'bg-destructive': noti === 'destructive',
               'bg-blue-500': noti === 'primary',
               'bg-green-500': noti === 'success',
             }
