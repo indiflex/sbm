@@ -71,9 +71,8 @@ export function AlerterProvider({ children }: PropsWithChildren) {
       setOpen(true);
     });
 
-  const makeResolver = (value: string) => {
-    setTimeout(resolver, 100, value);
-  };
+  // 먼저 close되고 0.1초 후 promise 실행하여 도시에 2개의 AlertDialog가 뜨는 걸 방지한다!
+  const makeResolver = (value: string) => setTimeout(resolver, 1000, value);
 
   const confirm = (options: Options) => setup(options, 'confirm');
   const alert = (options: Options) => setup(options, 'alert');
