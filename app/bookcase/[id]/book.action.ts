@@ -2,7 +2,7 @@
 
 import { auth } from '@/lib/auth';
 import prisma from '@/lib/db';
-import { validate } from '@/lib/validator';
+import { validate, validateAsync } from '@/lib/validator';
 import z from 'zod';
 
 export const saveBook = async (formData: FormData) => {
@@ -52,7 +52,34 @@ export const saveBook = async (formData: FormData) => {
   }
 };
 
-export const deleteBook = async (id: number) =>
-  prisma.book.delete({
+export const deleteBook = async (id: number) => {
+  const session = await auth();
+  if (!session?.user || !session.user.id) throw new Error('Need Login');
+
+  // QQQ: check exists
+  const zobj = z
+    .object({
+      id: z.number(),
+    })
+    .superRefine(async ({ id }, ctx) => {
+      const book = await prisma.book.findUnique({
+        where: { id },
+        // where: { id: id + 10000 },
+      });
+
+      if (!book) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `This Book(#${id}) is not exists!`,
+          path: ['id'],
+        });
+      }
+    });
+
+  const [err, data] = await validateAsync(zobj, { id });
+  if (err) return err;
+
+  await prisma.book.delete({
     where: { id },
   });
+};
