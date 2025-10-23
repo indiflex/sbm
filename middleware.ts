@@ -51,7 +51,7 @@ export const config = {
   // runtime: 'nodejs',
 
   matcher: [
-    '/((?!sign|_next/static|_next/image|api/auth|api/sendmail|forgotpasswd|registcheck|favicon.ico|robots.txt|.well-known|profile|$).*)',
+    '/((?!sign|_next/static|_next/image|api/auth|api/sendmail|forgotpasswd|registcheck|favicon.ico|robots.txt|.well-known|profile|dum|$).*)',
     '/',
     '/dashboard',
   ],

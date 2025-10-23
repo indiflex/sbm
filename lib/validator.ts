@@ -40,12 +40,18 @@ const validErrorWithData = (
   error: unknown | z.ZodError,
   obj: Record<string, FormDataEntryValue | string | unknown>
 ) => {
+  console.log(
+    'error>>',
+    error instanceof z.ZodError,
+    z.treeifyError(error as z.ZodError<typeof obj>)
+  );
   let err =
     error instanceof z.ZodError &&
     (z.treeifyError(error as z.ZodError<typeof obj>).properties as ValidError);
 
   for (const [prop, value] of Object.entries(obj)) {
     if (prop.startsWith('$')) continue;
+    console.log('prop value err ==>', prop, value, err);
     if (!err)
       err = {
         [prop]: {

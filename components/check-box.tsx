@@ -1,7 +1,8 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import type { ValidError } from '@/lib/validator';
-import { type RefObject, useCallback, useEffect, useId, useState } from 'react';
+import { type RefObject, useCallback, useId, useState } from 'react';
 import { Checkbox } from './ui/checkbox';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -31,30 +32,28 @@ export default function CheckBox({
 
   const { errors, value } =
     error && !!name && error[name] ? error[name] : { errors: [] };
-  console.log('eeeeeeeeeeeerror>>', errors, value);
+  // console.log('eeeeeeeeeeeerror>>', errors, value);
 
   const Compo = type === 'switch' ? Switch : Checkbox;
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  const setting = useCallback((chk: boolean) => {
-    setChecked(chk);
-    if (setCheckedFunction) setCheckedFunction(!!chk);
-  }, []);
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  useEffect(() => {
-    console.log('*** value=', value);
-    if (value) setting(true);
-  }, [error, setting]);
+  const setting = useCallback(
+    (chk: boolean) => {
+      setChecked(chk);
+      if (setCheckedFunction) setCheckedFunction(!!chk);
+    },
+    [setCheckedFunction]
+  );
 
   return (
     <div>
-      <div className='flex items-center gap-3'>
+      <div
+        className={cn('flex items-center gap-3', { 'mb-5': !errors?.length })}
+      >
         <Compo
           id={uid}
           name={type === 'switch' && !!name ? name : uid}
           ref={ref}
-          checked={checked}
+          checked={checked || !!value}
           onCheckedChange={checked => setting(!!checked)}
         />
         {label && (
@@ -64,7 +63,7 @@ export default function CheckBox({
         )}
       </div>
       {type !== 'switch' && !!name && (
-        <Input type='text' name={name} value={checked ? 'on' : ''} />
+        <Input type='hidden' name={name} value={checked ? 'on' : ''} />
       )}
 
       {errors?.map(e => (

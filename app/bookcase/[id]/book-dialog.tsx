@@ -14,20 +14,25 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { useAlerter } from '@/hooks/contexts/alerter';
 import type { BookData } from '@/lib/db';
 import type { ValidError } from '@/lib/validator';
 import { useRouter } from 'next/navigation';
-import { useActionState, useState, type PropsWithChildren } from 'react';
+import {
+  useActionState,
+  useState,
+  useTransition,
+  type PropsWithChildren,
+} from 'react';
 import { deleteBook, saveBook } from './book.action';
 
 export default function BookDialog({
   book = {
     id: 0,
     title: '',
-    ispublic: false,
-    withdel: true,
+    ispublic: true,
+    withdel: false,
     remark: '',
     member: 0,
   },
@@ -36,36 +41,61 @@ export default function BookDialog({
   book?: BookData;
 }>) {
   const router = useRouter();
+  const [isOpen, setOpen] = useState(false);
 
-  const [ispublic, setPublic] = useState(false);
-  const [withdel, setWithdel] = useState(book.withdel);
+  const { confirm, alert, prompt } = useAlerter();
 
   const [validError, save, isPending] = useActionState(
     async (_: ValidError | undefined, formData: FormData) => {
-      // formData.set('ispublic', ispublic ? 'on' : '');
-      // formData.set('withdel', withdel ? 'on' : '');
+      if (book.id) formData.set('id', String(book.id));
       const err = await saveBook(formData);
       if (err) {
         return err;
       }
 
       router.refresh();
+      setOpen(false);
     },
     undefined
   );
 
+  const [isLoading, startTransition] = useTransition();
   const remove = async () => {
-    await deleteBook(book.id);
-    router.refresh();
+    // const ret = await prompt({
+    //   title: '탈퇴하시려면 인증 번호를 입력하세요!',
+    //   placeholder: '인증번호...',
+    // });
+    // console.log('Number is ', ret);
+    const ret = await confirm({
+      title: '정말 삭제하시겠어요??',
+      description: '삭제 후에는 복원할 수 없습니다!',
+      variant: 'destructive',
+      okText: '삭제',
+      cancelText: '취소',
+    });
+    console.log('🚀 ~ ret:', ret);
+    if (!ret) return;
+
+    startTransition(async () => {
+      const err = await deleteBook(book.id + 100);
+      if (err) {
+        setOpen(false);
+        await alert({ title: err.id.errors[0], variant: 'destructive' });
+        return;
+      }
+
+      router.refresh();
+      setOpen(false);
+    });
   };
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <form action={save}>
           <DialogHeader>
-            <DialogTitle>{book.id ? 'Create' : 'Edit'} Book</DialogTitle>
+            <DialogTitle>{book.id ? 'Edit' : 'Create'} Book</DialogTitle>
             <DialogDescription>descript...</DialogDescription>
           </DialogHeader>
 
@@ -92,18 +122,19 @@ export default function BookDialog({
               label='public book'
               name='ispublic'
               error={validError}
-              checkValue={ispublic}
-              setCheckedFunction={setPublic}
+              checkValue={book.ispublic}
             />
 
-            <div>
+            <CheckBox
+              label='Open with deletion'
+              name='withdel'
+              type='switch'
+              error={validError}
+              checkValue={book.withdel}
+            />
+
+            {/* <div>
               <div className='flex items-center gap-3'>
-                {/* <Checkbox
-                  id='withdel'
-                  name='withdel'
-                  checked={withdel}
-                  onCheckedChange={checked => setWithdel(!!checked)}
-                /> */}
                 <Switch
                   id='withdel'
                   name='withdel'
@@ -117,7 +148,7 @@ export default function BookDialog({
               <p className='mt-1 text-red-500 text-sm'>
                 {validError?.withdel?.errors[0]}
               </p>
-            </div>
+            </div> */}
 
             <div className='flex flex-col'>
               <Label
@@ -142,7 +173,7 @@ export default function BookDialog({
 
             {!!book.id && (
               <Button onClick={remove} type='button' variant={'destructive'}>
-                Delete
+                {isLoading ? 'Deleting...' : 'Delete'}
               </Button>
             )}
 

@@ -77,5 +77,30 @@ export const findBookById = async (id: number) =>
 export const findBookWithMarkById = async (id: number) =>
   prisma.book.findUnique({
     where: { id },
-    include: { Mark: true },
+    // include: { Mark: true },
+    include: {
+      Mark: {
+        include: {
+          _count: { select: { Likes: true, Talk: true, Report: true } },
+        },
+      },
+    },
+  });
+
+// mark
+export type MarkWithCount = NonNullable<
+  Awaited<ReturnType<typeof findMarkWithCount>>
+>;
+export type MarkWithCountData = Omit<MarkWithCount, 'createdAt' | 'updatedAt'>;
+export type MarkData = Omit<
+  Omit<MarkWithCount, 'createdAt' | 'updatedAt'>,
+  '_count'
+>;
+
+export const findMarkWithCount = async (id: number) =>
+  prisma.mark.findUnique({
+    where: { id },
+    include: {
+      _count: { select: { Likes: true, Talk: true, Report: true } },
+    },
   });

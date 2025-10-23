@@ -9,17 +9,17 @@ type Prop = {
 
 export default function IconLabel({
   icon,
-  size = 24,
+  size,
   noti,
   children,
 }: PropsWithChildren<Prop>) {
   const lucideIcon = cloneElement(icon, {
     className: cn('text-muted-foreground mr-1', icon.props.className),
-    size,
+    size: size ?? (noti ? 28 : 22),
   });
 
   return (
-    <div className='relative flex items-center'>
+    <div className='relative flex items-center [&>svg]:mr-[.2rem]'>
       {lucideIcon}
       {noti ? (
         <small

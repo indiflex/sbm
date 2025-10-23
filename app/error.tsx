@@ -24,8 +24,10 @@ export default function ErrorPage({
       ) : (
         <div className='text-red-500'>{error.message}</div>
       )}
-      <Button onClick={() => reset()}>Try again</Button>
-      <Button onClick={() => router.back()}>Go Back</Button>
+      <div className='flex gap-3'>
+        <Button onClick={() => reset()}>Try again</Button>
+        <Button onClick={() => router.back()}>Go Back</Button>
+      </div>
     </div>
   );
 }

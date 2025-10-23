@@ -1,6 +1,7 @@
 import IconLabel from '@/components/icon-label';
 import { Button } from '@/components/ui/button';
 import UserAvatar from '@/components/user-avatar';
+import { auth } from '@/lib/auth';
 import prisma, { findMemberByIdWithCount } from '@/lib/db';
 import {
   AlbumIcon,
@@ -18,24 +19,32 @@ type Props = {
 
 export default function BookcaseNickname({ params }: Props) {
   const { id } = use(params);
+  const session = use(auth());
+  const isMyBookcase = !!session?.user;
   const mbr = use(findMemberByIdWithCount(id));
   if (!mbr) return <h1 className='text-2xl'>User Not Found</h1>;
 
   const books = use(
     prisma.book.findMany({
       where: { member: Number(id) },
-      include: { Mark: true },
+      include: {
+        Mark: {
+          include: {
+            _count: { select: { Likes: true, Talk: true, Report: true } },
+          },
+        },
+      },
     })
   );
 
   return (
-    <div className='flex max-h-full flex-col pt-2'>
+    <div className='flex max-h-full flex-col bg-gradient-to-tr* from-green-500* px-2 pt-2'>
       <h1 className='flex items-center justify-between px-5 font-semibold text-2xl'>
         <div className='flex items-center tracking-wider'>
           {/* <UserAvatar id={id} withName={true} /> */}
-          {mbr && <UserAvatar member={mbr} withName={true} />}
+          {!isMyBookcase && mbr && <UserAvatar member={mbr} withName={true} />}
           <span className='ml-2 font-medium text-green-600 tracking-tighter'>
-            Bookcase
+            {isMyBookcase && 'My'} Bookcase
           </span>
         </div>
         <span className='flex gap-3 text-lg'>
@@ -54,14 +63,16 @@ export default function BookcaseNickname({ params }: Props) {
           <Book key={book.id} book={book} />
         ))}
 
-        <BookDialog>
-          <Button
-            variant={'ghost'}
-            className='flex w-72 justify-start rounded-full bg-slate-200 font-semibold text-lg hover:bg-slate-300'
-          >
-            <PlusIcon /> Add a Book
-          </Button>
-        </BookDialog>
+        {isMyBookcase && (
+          <BookDialog>
+            <Button
+              variant={'ghost'}
+              className='flex w-72 justify-start rounded-full bg-slate-200 font-semibold text-lg hover:bg-slate-300'
+            >
+              <PlusIcon /> Add a Book
+            </Button>
+          </BookDialog>
+        )}
       </div>
     </div>
   );
