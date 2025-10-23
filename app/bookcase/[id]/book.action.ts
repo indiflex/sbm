@@ -30,10 +30,11 @@ export const saveBook = async (formData: FormData) => {
   if (err) return err;
 
   const id = Number(formData.get('id'));
+  const { id: userId, isadmin } = session.user;
 
   if (id) {
     await prisma.book.update({
-      where: { id },
+      where: isadmin ? { id } : { id, member: Number(userId) },
       data: {
         ...data,
         ispublic: data.ispublic === 'on',
@@ -63,8 +64,8 @@ export const deleteBook = async (id: number) => {
     })
     .superRefine(async ({ id }, ctx) => {
       const book = await prisma.book.findUnique({
-        where: { id },
-        // where: { id: id + 10000 },
+        // where: { id },
+        where: { id: id + 10000 },
       });
 
       if (!book) {
@@ -76,10 +77,12 @@ export const deleteBook = async (id: number) => {
       }
     });
 
-  const [err, data] = await validateAsync(zobj, { id });
+  const [err] = await validateAsync(zobj, { id });
   if (err) return err;
 
+  const { id: userId, isadmin } = session.user;
+
   await prisma.book.delete({
-    where: { id },
+    where: isadmin ? { id } : { id, member: Number(userId) },
   });
 };

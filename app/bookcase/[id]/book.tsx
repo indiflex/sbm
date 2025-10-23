@@ -30,7 +30,7 @@ export default function Book({ id, book }: Props) {
       </h1>
     );
 
-  const { id: bookId, title, remark, ispublic, withdel, member } = data;
+  const { title, remark, ispublic, withdel, member } = data;
   const session = use(auth());
   const isMine = session?.user.id === String(member);
 
@@ -44,6 +44,7 @@ export default function Book({ id, book }: Props) {
               ? 'text-green-500 text-shadow-green-300'
               : 'text-muted-foreground text-shadow-gray-300'
           )}
+          title={remark || title}
         >
           {!ispublic && <BookKeyIcon />} {title}
         </h1>

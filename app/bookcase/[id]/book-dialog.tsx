@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useAlerter } from '@/hooks/contexts/alerter';
 import type { BookData } from '@/lib/db';
 import type { ValidError } from '@/lib/validator';
 import { useRouter } from 'next/navigation';
@@ -34,6 +35,8 @@ export default function BookDialog({
 }: PropsWithChildren<{
   book?: BookData;
 }>) {
+  const { confirm, alert } = useAlerter();
+
   const router = useRouter();
   // const [ispublic, setPublic] = useState(false);
   // const [withdel, setWithdel] = useState(false);
@@ -57,12 +60,14 @@ export default function BookDialog({
   );
 
   const remove = async () => {
-    if (!confirm('Are u sure??')) return;
+    const ret = await confirm({ title: 'Are u sure??' });
+    if (!ret) return;
 
     const err = await deleteBook(book.id);
     if (err) {
       console.log('Err>>', err.id.errors[0]);
-      alert(err.id.errors[0]);
+      await alert({ title: err.id.errors[0], okText: 'Confirm' });
+      setOpen(false);
       return;
     }
     router.refresh();
