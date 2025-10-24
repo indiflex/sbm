@@ -89,13 +89,13 @@ export const findBookWithMarkById = async (id: number) =>
   });
 
 // mark
-export type MarkWithCount = NonNullable<
+export type MarkAllColumn = NonNullable<
   Awaited<ReturnType<typeof findMarkWithCount>>
 >;
-export type MarkWithCountData = Omit<MarkWithCount, 'createdAt' | 'updatedAt'>;
+export type MarkWithCountData = Omit<MarkAllColumn, 'createdAt' | 'updatedAt'>;
 export type MarkData = Omit<
-  Omit<MarkWithCount, 'createdAt' | 'updatedAt'>,
-  '_count'
+  MarkAllColumn,
+  'createdAt' | 'updatedAt' | '_count'
 >;
 
 export const findMarkWithCount = async (id: number) =>

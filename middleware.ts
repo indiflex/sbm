@@ -1,3 +1,5 @@
+'server only';
+
 import { encode, getToken } from 'next-auth/jwt';
 import { type NextRequest, NextResponse } from 'next/server';
 import { MAX_AGE } from './lib/auth';

@@ -40,20 +40,20 @@ export default function Mark({ mark }: { mark: MarkWithCountData }) {
         className='card'
       >
         <div className='flex items-center gap-2'>
-          <Avatar className='size-auto h-16 max-w-[50%] rounded-lg border group-hover:ring-2 group-hover:ring-primary'>
+          <Avatar className='size-auto h-16 max-w-[50%] rounded-lg group-hover:ring-2 group-hover:ring-primary'>
             <AvatarImage src={mark.image || '/site_dummy.jpg'} />
             <AvatarFallback className='w-[150%]'>
               {mark.title.substring(0, 8)}
             </AvatarFallback>
           </Avatar>
-          <div className='flex flex-col overflow-hidden'>
-            <h3 className='truncate font-medium text-lg dark:text-black/80'>
+          <div className='flex flex-col overflow-hidden [&>*]:truncate'>
+            <h3 className='font-medium text-lg dark:text-black/80'>
               {mark.title}
             </h3>
-            <small className='truncate text-muted-foreground'>
+            <small className='text-muted-foreground'>
               {mark.descript || mark.title}
             </small>
-            <small className='truncate text-muted-foreground underline-offset-3 group-hover:underline'>
+            <small className='text-muted-foreground underline-offset-3 group-hover:underline'>
               {mark.link}
             </small>
           </div>
