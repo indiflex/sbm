@@ -59,6 +59,7 @@ export const findMemberByIdWithCount = async (id: number | string) =>
       image: true,
       isadmin: true,
       _count: { select: { Book: true, Mark: true } },
+      Book: true,
     },
   });
 

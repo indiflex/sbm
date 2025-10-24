@@ -5,21 +5,28 @@ type Prop = {
   icon: JSX.Element;
   size?: number;
   noti?: 'default' | 'muted' | 'primary' | 'destructive' | 'success';
+  tight?: boolean;
 };
 
 export default function IconLabel({
   icon,
   size,
   noti,
+  tight,
   children,
 }: PropsWithChildren<Prop>) {
   const lucideIcon = cloneElement(icon, {
     className: cn('text-muted-foreground mr-1', icon.props.className),
-    size: size ?? (noti ? 28 : 22),
+    size: size ?? (noti ? 26 : 20),
   });
 
   return (
-    <div className='relative flex items-center [&>svg]:mr-[.2rem]'>
+    <div
+      className={cn(
+        'relative flex items-center dark:text-muted-foreground',
+        tight ? '[&>svg]:mr-[.2rem]' : '[&>svg]:mr-1'
+      )}
+    >
       {lucideIcon}
       {noti ? (
         <small

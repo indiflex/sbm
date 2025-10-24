@@ -54,11 +54,11 @@ model Mark {
   createdAt DateTime @default(now()) @db.Timestamp(0)
   updatedAt DateTime @default(now()) @updatedAt @db.Timestamp(0)
   book      Int      @db.UnsignedInt
-  title     String   @db.VarChar(30)
-  link      String   @db.VarChar(512)
-  image     String?  @db.VarChar(255)
+  title     String   @db.VarChar(100)
+  link      String   @db.VarChar(1000)
+  image     String?  @db.VarChar(500)
   maker     Int      @db.UnsignedInt
-  descript  String?  @db.VarChar(512)
+  descript  String?  @db.VarChar(1000)
   Likes     Likes[]
   Book      Book     @relation(fields: [book], references: [id], onDelete: Cascade, map: "fk_Mark_book")
   Member    Member?  @relation(fields: [maker], references: [id], map: "fk_Mark_maker_Member")

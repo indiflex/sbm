@@ -35,20 +35,18 @@ export default function Book({ id, book }: Props) {
   const isMine = session?.user.id === String(member);
 
   return (
-    <div className='flex w-80 flex-shrink-0 flex-col justify-start rounded-lg bg-slate-300 pl-2 dark:bg-muted-foreground'>
+    <div className='flex w-72 flex-shrink-0 flex-col justify-start rounded-lg bg-slate-200 pl-2 dark:bg-muted'>
       <div className='flex items-center justify-between pr-2'>
         <h1
           className={cn(
             'flex items-center truncate p-2 font-semibold text-xl tracking-tighter',
             ispublic
-              ? 'text-green-600 text-shadow-green-300 dark:text-green-300'
-              : 'text-muted-foreground text-shadow-gray-300 dark:text-muted'
+              ? 'text-green-600 text-shadow-green-300'
+              : 'text-muted-foreground text-shadow-gray-300'
           )}
           title={remark || ''}
         >
-          {!ispublic && (
-            <BookKeyIcon className='text-muted-foreground/50 dark:text-muted/50' />
-          )}
+          {!ispublic && <BookKeyIcon />}
           {title}
         </h1>
 
@@ -56,7 +54,7 @@ export default function Book({ id, book }: Props) {
           <BookDialog book={book}>
             <Button
               variant={'ghost'}
-              className='font-semibold text-lg hover:bg-slate-300'
+              className='font-semibold text-lg hover:bg-muted-foreground/30 dark:hover:bg-muted-foreground/30'
             >
               <MoreHorizontalIcon />
             </Button>
@@ -89,19 +87,28 @@ export default function Book({ id, book }: Props) {
         )}
       </div>
       {isMine && (
-        <div className='my-1 flex items-center justify-between gap-5 pr-2 font-medium'>
+        <div className='my-1 flex items-center justify-between pr-2 font-medium'>
           <Button
             variant={'ghost'}
-            className='flex w-[55%] justify-start font-semibold text-lg hover:bg-muted-foreground/20'
+            className='flex rounded-full font-semibold text-lg hover:bg-muted-foreground/30 dark:hover:bg-muted-foreground/30'
           >
             <PlusIcon /> Add a Mark
           </Button>
 
-          <div className='flex items-center gap-2'>
-            <IconLabel icon={<AlbumIcon />}>{marks.length}</IconLabel>
-            {ispublic && <IconLabel icon={<HeartPlusIcon />}>12</IconLabel>}
-            <ToolTip content={'With Del'}>
-              <CopyXIcon className='text-red-500' size={20} />
+          <div className='flex items-center gap-2 text-sm'>
+            <IconLabel icon={<AlbumIcon />} tight={true}>
+              {marks.length}
+            </IconLabel>
+            {ispublic && (
+              <IconLabel
+                icon={<HeartPlusIcon className='text-red-300' />}
+                tight={true}
+              >
+                12
+              </IconLabel>
+            )}
+            <ToolTip content='Open With Del' variant='destructive'>
+              <CopyXIcon className='text-red-500' size={18} />
             </ToolTip>
           </div>
         </div>

@@ -78,3 +78,8 @@ export const deleteBook = async (id: number) => {
     where: { id },
   });
 };
+
+export const deleteMark = async (id: number) =>
+  prisma.mark.delete({
+    where: { id },
+  });

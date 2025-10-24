@@ -67,7 +67,7 @@ export default function BookcaseNickname({ params }: Props) {
           <BookDialog>
             <Button
               variant={'ghost'}
-              className='flex w-72 justify-start rounded-full bg-slate-200 font-semibold text-lg hover:bg-slate-300'
+              className='flex w-60 justify-start rounded-full bg-muted-foreground/20 font-semibold text-lg hover:bg-muted-foreground/30'
             >
               <PlusIcon /> Add a Book
             </Button>

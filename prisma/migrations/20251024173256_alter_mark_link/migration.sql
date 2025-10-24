@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE `Mark` MODIFY `title` VARCHAR(100) NOT NULL,
+    MODIFY `link` VARCHAR(1000) NOT NULL,
+    MODIFY `image` VARCHAR(500) NULL,
+    MODIFY `descript` VARCHAR(1000) NULL;
