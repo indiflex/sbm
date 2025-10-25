@@ -1,9 +1,7 @@
 'use client';
 
-import IconLabel from '@/components/icon-label';
-import ToolTip from '@/components/tool-tip';
+import IconLabelButton from '@/components/icon-label-button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import type { MarkWithCountData } from '@/lib/db';
 import {
@@ -42,12 +40,15 @@ export default function Mark({ mark }: { mark: MarkWithCountData }) {
         <div className='flex items-center gap-2'>
           <Avatar className='size-auto h-16 max-w-[50%] rounded-lg group-hover:ring-2 group-hover:ring-primary'>
             <AvatarImage src={mark.image || '/site_dummy.jpg'} />
-            <AvatarFallback className='w-[150%]'>
+            <AvatarFallback className='w-full'>
               {mark.title.substring(0, 8)}
             </AvatarFallback>
           </Avatar>
           <div className='flex flex-col overflow-hidden [&>*]:truncate'>
-            <h3 className='font-medium text-lg dark:text-black/80'>
+            <h3
+              className='font-medium text-lg dark:text-black/80'
+              title={mark.title}
+            >
               {mark.title}
             </h3>
             <small className='text-muted-foreground'>
@@ -60,30 +61,29 @@ export default function Mark({ mark }: { mark: MarkWithCountData }) {
         </div>
         <Separator className='mt-2 mb-0.5 bg-muted-foreground/30' />
         <div className='flex items-center justify-between pl-2 text-sm'>
-          <IconLabel icon={<ThumbsUpIcon />}>24</IconLabel>
-          <Button
-            variant={'ghost'}
-            className='h-[80%] py-1 dark:hover:bg-muted-foreground/30'
+          <IconLabelButton icon={<ThumbsUpIcon />} isActive={true}>
+            {mark._count.Likes}
+          </IconLabelButton>
+          <IconLabelButton icon={<MessageCircleIcon />}>
+            {mark._count.Talk}
+          </IconLabelButton>
+          <IconLabelButton
+            icon={<HatGlassesIcon />}
+            isActive={false}
+            tooltip='Report'
+            isDanger
           >
-            <IconLabel icon={<MessageCircleIcon />}>36</IconLabel>
-          </Button>
-          <IconLabel icon={<HatGlassesIcon />}>12</IconLabel>
+            {mark._count.Report}
+          </IconLabelButton>
           {isMine && (
             <>
-              <ToolTip content='바로 삭제' variant='destructive'>
-                <Button
-                  variant={'ghost'}
-                  className='h-[80%] py-1 text-destructive'
-                >
-                  <BookmarkXIcon className='size-5' />
-                </Button>
-              </ToolTip>
-              <Button
-                variant={'ghost'}
-                className='h-[80%] py-1.5 dark:text-black/70 dark:hover:bg-muted-foreground/30'
-              >
-                <MoreHorizontalIcon />
-              </Button>
+              <IconLabelButton
+                icon={<BookmarkXIcon className='size-5' />}
+                isDanger={true}
+                tooltip='Delete this Mark right away'
+              />
+
+              <IconLabelButton icon={<MoreHorizontalIcon />} />
             </>
           )}
         </div>

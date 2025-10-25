@@ -16,7 +16,6 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useAlerter } from '@/hooks/contexts/alerter';
-import type { BookData } from '@/lib/db';
 import type { ValidError } from '@/lib/validator';
 import { useRouter } from 'next/navigation';
 import {
@@ -25,10 +24,9 @@ import {
   useTransition,
   type PropsWithChildren,
 } from 'react';
-import { deleteBook, saveBook } from './book.action';
 
-export default function BookDialog({
-  book = {
+export default function MarkDialog({
+  mark = {
     id: 0,
     title: '',
     ispublic: true,
@@ -38,7 +36,7 @@ export default function BookDialog({
   },
   children,
 }: PropsWithChildren<{
-  book?: BookData;
+  mark?: MarkData;
 }>) {
   const router = useRouter();
   const [isOpen, setOpen] = useState(false);
@@ -93,7 +91,7 @@ export default function BookDialog({
       <DialogContent>
         <form action={save}>
           <DialogHeader>
-            <DialogTitle>{book.id ? 'Edit' : 'Create'} Book</DialogTitle>
+            <DialogTitle>{book.id ? 'Edit' : 'Create'} Mark</DialogTitle>
             <DialogDescription>descript...</DialogDescription>
           </DialogHeader>
 

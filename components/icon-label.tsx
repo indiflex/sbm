@@ -6,6 +6,8 @@ type Prop = {
   size?: number;
   noti?: 'default' | 'muted' | 'primary' | 'destructive' | 'success';
   tight?: boolean;
+  isActive?: boolean;
+  isDanger?: boolean;
 };
 
 export default function IconLabel({
@@ -13,10 +15,15 @@ export default function IconLabel({
   size,
   noti,
   tight,
+  isActive,
+  isDanger,
   children,
 }: PropsWithChildren<Prop>) {
   const lucideIcon = cloneElement(icon, {
-    className: cn('text-muted-foreground mr-1', icon.props.className),
+    className: cn('text-muted-foreground', icon.props.className, {
+      'fill-primary': isActive,
+      'text-red-400 hover:text-destructive': isDanger,
+    }),
     size: size ?? (noti ? 26 : 20),
   });
 
@@ -32,7 +39,7 @@ export default function IconLabel({
         <small
           className={cn(
             'absolute top-0 right-0 min-w-5 rounded-full p-0 text-center text-sm text-white tracking-tighter ring-1',
-            `translate-x-3.5 translate-y-[-0.4rem]`,
+            `translate-x-2 translate-y-[-0.4rem]`,
             {
               'bg-black': noti === 'default',
               'bg-muted-foreground': noti === 'muted',

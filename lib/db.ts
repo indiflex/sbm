@@ -105,3 +105,9 @@ export const findMarkWithCount = async (id: number) =>
       _count: { select: { Likes: true, Talk: true, Report: true } },
     },
   });
+
+export const myLikedMarks = async (maker: number) =>
+  prisma.mark.findMany({
+    where: { maker },
+    select: { id: true },
+  });
