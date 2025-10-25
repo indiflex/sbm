@@ -15,7 +15,8 @@ const mbrs = [
             create: {
               link: 'https://naver.com',
               title: 'Naver',
-              descript: 'seeding...',
+              maker: 1,
+              descript: 'seed data',
             },
           },
         },

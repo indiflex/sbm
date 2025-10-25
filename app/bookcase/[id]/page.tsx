@@ -38,7 +38,7 @@ export default function BookcaseNickname({ params }: Props) {
   );
 
   return (
-    <div className='flex max-h-full flex-col pt-2'>
+    <div className='flex h-full flex-col pt-2'>
       <h1 className='flex items-center justify-between px-5 font-semibold text-2xl'>
         <div className='flex items-center tracking-wider'>
           {/* <UserAvatar id={id} withName={true} /> */}
@@ -58,21 +58,23 @@ export default function BookcaseNickname({ params }: Props) {
         </span>
       </h1>
 
-      <div className='flex gap-3 overflow-x-scroll py-2'>
-        {books.map(book => (
-          <Book key={book.id} book={book} />
-        ))}
+      <div className='h-full overflow-x-scroll'>
+        <div className='flex gap-3 py-2'>
+          {books.map(book => (
+            <Book key={book.id} book={book} />
+          ))}
 
-        {isMyBookcase && (
-          <BookDialog>
-            <Button
-              variant={'ghost'}
-              className='flex w-60 justify-start rounded-full bg-slate-200 font-semibold text-lg hover:bg-muted-foreground/30 dark:bg-muted dark:hover:bg-muted-foreground/30'
-            >
-              <PlusIcon /> Add a Book
-            </Button>
-          </BookDialog>
-        )}
+          {isMyBookcase && (
+            <BookDialog>
+              <Button
+                variant={'ghost'}
+                className='flex w-60 justify-start rounded-full bg-slate-200 font-semibold text-lg hover:bg-muted-foreground/30 dark:bg-muted dark:hover:bg-muted-foreground/30'
+              >
+                <PlusIcon /> Add a Book
+              </Button>
+            </BookDialog>
+          )}
+        </div>
       </div>
     </div>
   );

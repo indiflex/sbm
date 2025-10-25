@@ -6,10 +6,9 @@ import { validate, validateAsync } from '@/lib/validator';
 import z from 'zod';
 
 export const saveBook = async (formData: FormData) => {
-  const session = await auth();
-  if (!session?.user || !session.user.id) throw new Error('Need Login');
+  const user = await checkLogin();
 
-  const member = Number(session.user.id);
+  const member = Number(user.id);
 
   console.log('🚀 ~ formData:', Object.fromEntries(formData.entries()));
 
@@ -30,7 +29,7 @@ export const saveBook = async (formData: FormData) => {
   if (err) return err;
 
   const id = Number(formData.get('id'));
-  const { id: userId, isadmin } = session.user;
+  const { id: userId, isadmin } = user;
 
   if (id) {
     await prisma.book.update({
@@ -53,9 +52,16 @@ export const saveBook = async (formData: FormData) => {
   }
 };
 
-export const deleteBook = async (id: number) => {
+const checkLogin = async () => {
   const session = await auth();
   if (!session?.user || !session.user.id) throw new Error('Need Login');
+  return session.user;
+};
+
+export const deleteBook = async (id: number) => {
+  // const session = await auth();
+  // if (!session?.user || !session.user.id) throw new Error('Need Login');
+  const user = await checkLogin();
 
   const zobj = z
     .object({
@@ -79,9 +85,41 @@ export const deleteBook = async (id: number) => {
   const [err] = await validateAsync(zobj, { id });
   if (err) return err;
 
-  const { id: userId, isadmin } = session.user;
+  const { id: userId, isadmin } = user;
 
   await prisma.book.delete({
     where: isadmin ? { id } : { id, member: Number(userId) },
+  });
+};
+
+export const likesAndReports = async (member: number) => {
+  const ilikes = await prisma.likes.findMany({
+    where: { member },
+    select: { id: true },
+  });
+
+  const ireports = await prisma.report.findMany({
+    where: { member },
+    select: { id: true },
+  });
+
+  return [ilikes, ireports];
+};
+
+export const deleteMark = async (id: number, bookOwner: number) => {
+  const { id: userId, isadmin } = await checkLogin();
+  console.log('🚀 ~ userId:', userId, id, bookOwner);
+
+  // check exists
+  const mark = await prisma.mark.findUnique({
+    where: { id },
+  });
+  if (!mark) throw new Error(`This Mark(#${id}) is not exists!`);
+
+  if (!isadmin && Number(userId) !== bookOwner && mark.maker !== Number(userId))
+    throw new Error(`You have not authentication!`);
+
+  await prisma.mark.delete({
+    where: { id },
   });
 };

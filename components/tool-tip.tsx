@@ -17,7 +17,7 @@ export default function ToolTip({
   const [isOpen, setOpen] = useState(false);
 
   const doOpen = (openState: boolean) => {
-    console.log('🚀 ~ openState:', openState);
+    // console.log('🚀 ~ openState:', openState);
     setOpen(disabled ? false : openState);
   };
 

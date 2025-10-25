@@ -12,6 +12,7 @@
     "db:push": "dotenv -e .env.local prisma db push",
     "db:seed": "dotenv -e .env.local prisma db seed",
     "db:mig": "dotenv -e .env.local prisma migrate dev",
+    "db:migafter": "dotenv -e .env.local tsx prisma/after_mig.ts",
     "db:reset": "dotenv -e .env.local prisma migrate reset",
     "db:gen": "dotenv -e .env.local prisma generate"
   },
@@ -68,6 +69,7 @@
     "dotenv-cli": "^10.0.0",
     "prisma": "^6.15.0",
     "tailwindcss": "^4",
+    "tsx": "^4.20.6",
     "tw-animate-css": "^1.3.7",
     "typescript": "^5"
   }
