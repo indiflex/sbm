@@ -26,7 +26,7 @@ export const saveBook = async (formData: FormData) => {
     });
 
   const [err, data] = validate(zobj, formData);
-  console.log('🚀 ~ err:', err, data);
+  // console.log('🚀 ~ err:', err, data);
   if (err) return err;
 
   const id = Number(formData.get('id'));
@@ -57,15 +57,14 @@ export const deleteBook = async (id: number) => {
   const session = await auth();
   if (!session?.user || !session.user.id) throw new Error('Need Login');
 
-  // QQQ: check exists
   const zobj = z
     .object({
       id: z.number(),
     })
     .superRefine(async ({ id }, ctx) => {
       const book = await prisma.book.findUnique({
-        // where: { id },
-        where: { id: id + 10000 },
+        where: { id },
+        // where: { id: id + 10000 },
       });
 
       if (!book) {

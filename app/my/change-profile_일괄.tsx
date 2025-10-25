@@ -24,7 +24,7 @@ export default function ChangeProfile({ user }: Props) {
   const [emailError, sendEmailCode, isEmailPending] = useActionState(
     async (_: ValidError | undefined, formData: FormData) => {
       const err = await sendEmailChangeCode(formData);
-      console.log('🚀 ~ err:', err);
+      // console.log('🚀 ~ err:', err);
       if (err) return err;
       toggleSendCode();
     },

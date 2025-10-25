@@ -35,7 +35,7 @@ export default function BookDialog({
 }: PropsWithChildren<{
   book?: BookData;
 }>) {
-  const { confirm, alert } = useAlerter();
+  const { confirm, alert, prompt } = useAlerter();
 
   const router = useRouter();
   // const [ispublic, setPublic] = useState(false);
@@ -48,7 +48,7 @@ export default function BookDialog({
 
       formData.set('id', String(book.id));
       const err = await saveBook(formData);
-      console.log('🚀 ~ err:', err);
+      console.log('🚀 book-dialog.err:', err);
       if (err) {
         return err;
       }
@@ -62,6 +62,17 @@ export default function BookDialog({
   const remove = async () => {
     const ret = await confirm({ title: 'Are u sure??' });
     if (!ret) return;
+
+    const code = await prompt({
+      title: 'Inout the code?',
+      description: 'Input the code to delete this book.',
+      placeholder: 'code...',
+    });
+
+    if (code !== '1234') {
+      await alert({ title: 'Not valid code!', variant: 'destructive' });
+      return;
+    }
 
     const err = await deleteBook(book.id);
     if (err) {

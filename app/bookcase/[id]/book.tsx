@@ -35,7 +35,7 @@ export default function Book({ id, book }: Props) {
   const isMine = session?.user.id === String(member);
 
   return (
-    <div className='flex w-80 flex-shrink-0 flex-col justify-start rounded-lg bg-slate-200 pl-2'>
+    <div className='flex w-72 flex-shrink-0 flex-col justify-start rounded-lg bg-slate-200 pl-2 dark:bg-muted'>
       <div className='flex items-center justify-between pr-2'>
         <h1
           className={cn(
@@ -77,17 +77,19 @@ export default function Book({ id, book }: Props) {
 
       {/* mark group */}
       <div className='max-h-full space-y-2 overflow-y-scroll pr-2 pb-3'>
-        <Mark />
-        <Mark />
-        <Mark />
-        <Mark />
-        <Mark />
+        {book?.Mark.length ? (
+          book?.Mark.map(mark => <Mark key={mark.id} mark={mark} />)
+        ) : (
+          <h1 className='rounded-lg bg-white p-5 font-medium text-muted-foreground text-xl'>
+            There is no Marks.
+          </h1>
+        )}
       </div>
       {isMine && (
         <div className='my-1 flex items-center justify-between pr-2 font-medium'>
           <Button
             variant={'ghost'}
-            className='flex w-[60%] justify-start font-semibold text-lg hover:bg-slate-300'
+            className='flex rounded-full font-semibold text-lg hover:bg-muted-foreground/30 dark:hover:bg-muted-foreground/30'
           >
             <PlusIcon /> Add a Mark
           </Button>
@@ -95,10 +97,14 @@ export default function Book({ id, book }: Props) {
           <div className='flex gap-2'>
             <IconLabel icon={<AlbumIcon />}>99</IconLabel>
 
-            {ispublic && <IconLabel icon={<HeartPlusIcon />}>99</IconLabel>}
+            {ispublic && (
+              <IconLabel icon={<HeartPlusIcon className='text-red-400' />}>
+                99
+              </IconLabel>
+            )}
 
             {withdel && (
-              <ToolTip content={'With Del'}>
+              <ToolTip content={'With Del'} variant='destructive'>
                 <CopyXIcon className='text-red-500' />
               </ToolTip>
             )}

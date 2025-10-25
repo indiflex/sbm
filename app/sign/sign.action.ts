@@ -77,7 +77,7 @@ export const authorize = async (
 };
 
 export const logout = async () => {
-  await signOut({ redirectTo: '/sign' }); // QQQ: '/'
+  await signOut({ redirectTo: '/' });
 };
 
 export const regist = async (
@@ -321,7 +321,7 @@ export const updateProfileImage = async (formData: FormData) => {
   });
 
   const [err, data] = validate(zobj, formData);
-  console.log('🚀 ~ err:', err);
+  // console.log('🚀 ~ err:', err);
   // console.log('🚀 ~ data:', data);
   if (err) return [err];
 
