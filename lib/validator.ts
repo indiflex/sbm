@@ -1,8 +1,8 @@
-import { compare, hash } from 'bcryptjs';
-import { existsSync } from 'fs';
-import path from 'path';
-import z from 'zod';
-import { findMemberByEmail } from './db';
+import { compare, hash } from "bcryptjs";
+import { existsSync } from "fs";
+import path from "path";
+import z from "zod";
+import { findMemberByEmail } from "./db";
 
 export type ValidError = Record<
   string,
@@ -19,13 +19,13 @@ export type ValidError = Record<
 
 export const validate = <T extends z.ZodObject>(
   zobj: T,
-  formData: FormData
+  formData: FormData,
 ): [ValidError] | [undefined, z.core.output<T>] =>
   validateObject(zobj, Object.fromEntries(formData.entries()));
 
 export const validateObject = <T extends z.ZodObject>(
   zobj: T,
-  obj: Record<string, FormDataEntryValue | string | unknown>
+  obj: Record<string, FormDataEntryValue | string | unknown>,
 ): [ValidError] | [undefined, z.core.output<T>] => {
   const validator = zobj.safeParse(obj);
 
@@ -38,14 +38,14 @@ export const validateObject = <T extends z.ZodObject>(
 
 const validErrorWithData = (
   error: unknown | z.ZodError,
-  obj: Record<string, FormDataEntryValue | string | unknown>
+  obj: Record<string, FormDataEntryValue | string | unknown>,
 ) => {
   let err =
     error instanceof z.ZodError &&
     (z.treeifyError(error as z.ZodError<typeof obj>).properties as ValidError);
 
   for (const [prop, value] of Object.entries(obj)) {
-    if (prop.startsWith('$')) continue;
+    if (prop.startsWith("$")) continue;
     if (!err)
       err = {
         [prop]: {
@@ -62,7 +62,7 @@ export const validateAsync = async <T extends z.ZodObject>(
   zobj: T,
   formDataOrObj:
     | FormData
-    | Record<string, FormDataEntryValue | string | unknown>
+    | Record<string, FormDataEntryValue | string | unknown>,
 ): Promise<[ValidError] | [undefined, z.core.output<T>]> => {
   const obj =
     formDataOrObj instanceof FormData
@@ -76,11 +76,11 @@ export const validateAsync = async <T extends z.ZodObject>(
   }
 };
 
-export const existsEmail = async (email: string, prop: string = 'email') => {
+export const existsEmail = async (email: string, prop: string = "email") => {
   const mbr = await findMemberByEmail(email);
   if (mbr)
     return {
-      [prop]: { errors: ['Duplicated Email Address!'], value: email },
+      [prop]: { errors: ["Duplicated Email Address!"], value: email },
     };
 };
 
@@ -88,12 +88,12 @@ export const encryptPassword = async (passwd: string) => hash(passwd, 10);
 
 export const comparePassword = (
   plainPasswd: string | undefined,
-  encryptPasswd: string
-) => compare(plainPasswd || '', encryptPasswd);
+  encryptPasswd: string,
+) => compare(plainPasswd || "", encryptPasswd);
 
 export const existsFile = (filePath: string | undefined | null) => {
-  if (!filePath) return filePath;
+  if (!filePath || filePath.startsWith("http")) return filePath;
 
-  const fullPath = path.join(process.cwd(), 'public', filePath);
+  const fullPath = path.join(process.cwd(), "public", filePath);
   return existsSync(fullPath) ? filePath : null;
 };
