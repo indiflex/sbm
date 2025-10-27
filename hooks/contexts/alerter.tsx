@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   AlertDialog,
@@ -9,24 +9,18 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import {
   CircleAlertIcon,
   CircleQuestionMarkIcon,
   OctagonXIcon,
   TriangleAlertIcon,
-} from 'lucide-react';
-import {
-  createContext,
-  type PropsWithChildren,
-  use,
-  useRef,
-  useState,
-} from 'react';
+} from "lucide-react";
+import { createContext, type PropsWithChildren, use, useCallback, useRef, useState } from "react";
 
-type AlertType = 'confirm' | 'alert' | 'prompt';
+type AlertType = "confirm" | "alert" | "prompt";
 
 type Options = {
   title: string;
@@ -34,7 +28,7 @@ type Options = {
   okText?: string;
   type?: AlertType;
   cancelText?: string;
-  variant?: 'default' | 'destructive';
+  variant?: "default" | "destructive";
   placeholder?: string;
 };
 
@@ -45,9 +39,9 @@ type ContextValueProps = {
 };
 
 const AlerterContext = createContext<ContextValueProps>({
-  confirm: () => new Promise(resolve => resolve('')),
-  alert: () => new Promise(resolve => resolve('')),
-  prompt: () => new Promise(resolve => resolve('')),
+  confirm: () => new Promise((resolve) => resolve("")),
+  alert: () => new Promise((resolve) => resolve("")),
+  prompt: () => new Promise((resolve) => resolve("")),
 });
 
 export function AlerterProvider({ children }: PropsWithChildren) {
@@ -62,81 +56,68 @@ export function AlerterProvider({ children }: PropsWithChildren) {
   // alert       Octagon-X       CircleAlert
   // prompt      CircleQuestion  CircleQuestion
   const variantIcon = () => {
-    if (options?.type === 'prompt') return <CircleQuestionMarkIcon />;
-    if (options?.variant === 'destructive')
-      return options?.type === 'confirm' ? (
-        <TriangleAlertIcon />
-      ) : (
-        <OctagonXIcon />
-      );
+    if (options?.type === "prompt") return <CircleQuestionMarkIcon />;
+    if (options?.variant === "destructive")
+      return options?.type === "confirm" ? <TriangleAlertIcon /> : <OctagonXIcon />;
 
     return <CircleAlertIcon />;
   };
 
-  const setup = (options: Options, type: AlertType) =>
-    new Promise<string>(resolve => {
-      setOptions({ ...options, type });
-      setResolver(() => resolve);
-      setOpen(true);
-    });
+  const setup = useCallback(
+    (options: Options, type: AlertType) =>
+      new Promise<string>((resolve) => {
+        setOptions({ ...options, type });
+        setResolver(() => resolve);
+        setOpen(true);
+      }),
+    [],
+  );
 
   // 먼저 close되고 0.1초 후 promise 실행하여 도시에 2개의 AlertDialog가 뜨는 걸 방지한다!
   const makeResolver = (value: string) => setTimeout(resolver, 100, value);
 
-  const confirm = (options: Options) => setup(options, 'confirm');
-  const alert = (options: Options) => setup(options, 'alert');
-  const prompt = (options: Options) => setup(options, 'prompt');
+  const confirm = useCallback((options: Options) => setup(options, "confirm"), [setup]);
+  const alert = useCallback((options: Options) => setup(options, "alert"), [setup]);
+  const prompt = useCallback((options: Options) => setup(options, "prompt"), [setup]);
 
   return (
     <AlerterContext.Provider value={{ confirm, alert, prompt }}>
       {children}
 
       <AlertDialog open={isOpen} onOpenChange={setOpen}>
-        <AlertDialogContent className='w-80 translate-y-[-150px] sm:w-96'>
+        <AlertDialogContent className="w-80 translate-y-[-150px] sm:w-96">
           <AlertDialogHeader>
             <AlertDialogTitle
-              className={cn('flex items-center gap-2', {
-                'text-destructive': options?.variant === 'destructive',
+              className={cn("flex items-center gap-2", {
+                "text-destructive": options?.variant === "destructive",
               })}
             >
               {variantIcon()}
               {options?.title}
             </AlertDialogTitle>
             {options?.description && (
-              <AlertDialogDescription>
-                {options.description}
-              </AlertDialogDescription>
+              <AlertDialogDescription>{options.description}</AlertDialogDescription>
             )}
           </AlertDialogHeader>
-          {options?.type === 'prompt' && (
-            <Input
-              type='text'
-              ref={inputRef}
-              placeholder={options?.placeholder}
-            />
+          {options?.type === "prompt" && (
+            <Input type="text" ref={inputRef} placeholder={options?.placeholder} />
           )}
           <AlertDialogFooter>
-            {options?.type !== 'alert' && (
-              <AlertDialogCancel onClick={() => makeResolver('')}>
-                {options?.cancelText ?? 'Cancel'}
+            {options?.type !== "alert" && (
+              <AlertDialogCancel onClick={() => makeResolver("")}>
+                {options?.cancelText ?? "Cancel"}
               </AlertDialogCancel>
             )}
             <AlertDialogAction
               onClick={() =>
-                makeResolver(
-                  options?.type === 'prompt'
-                    ? (inputRef.current?.value ?? '')
-                    : 'OK'
-                )
+                makeResolver(options?.type === "prompt" ? (inputRef.current?.value ?? "") : "OK")
               }
               className={cn(
-                options?.variant === 'destructive' &&
-                  'bg-destructive hover:bg-destructive/90 dark:bg-destructive/60'
+                options?.variant === "destructive" &&
+                  "bg-destructive hover:bg-destructive/90 dark:bg-destructive/60",
               )}
             >
-              {(options?.okText ?? options?.type === 'alert')
-                ? 'Confirm'
-                : 'Continue'}
+              {(options?.okText ?? options?.type === "alert") ? "Confirm" : "Continue"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -1,8 +1,8 @@
-'use server';
+"use server";
 
-import { auth, signIn, signOut } from '@/lib/auth';
-import prisma, { findMemberByEmail } from '@/lib/db';
-import { newToken, uniqId, uniqNumId } from '@/lib/utils';
+import { auth, signIn, signOut } from "@/lib/auth";
+import prisma, { findMemberByEmail } from "@/lib/db";
+import { newToken, uniqId, uniqNumId } from "@/lib/utils";
 import {
   comparePassword,
   encryptPassword,
@@ -10,61 +10,55 @@ import {
   validate,
   validateAsync,
   type ValidError,
-} from '@/lib/validator';
-import { existsSync, mkdirSync } from 'fs';
-import { writeFile } from 'fs/promises';
-import { AuthError } from 'next-auth';
-import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
-import path from 'path';
-import z from 'zod';
-import type { SendMailBody } from '../api/sendmail/route';
+} from "@/lib/validator";
+import { existsSync, mkdirSync } from "fs";
+import { writeFile } from "fs/promises";
+import { AuthError } from "next-auth";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import path from "path";
+import z from "zod";
+import type { SendMailBody } from "../api/sendmail/route";
 
-export type Provider = 'google' | 'github' | 'naver' | 'kakao';
+export type Provider = "google" | "github" | "naver" | "kakao";
 
 export const login = async (provider: Provider, callback?: string | null) => {
-  await signIn(provider, { redirectTo: callback || '/bookcase' });
+  await signIn(provider, { redirectTo: callback || "/bookcase" });
 };
 
-export const loginNaver = async (redirectTo?: string | null) =>
-  login('naver', redirectTo);
+export const loginNaver = async (redirectTo?: string | null) => login("naver", redirectTo);
 
 // credential login (email, passwd)
-export const authorize = async (
-  _preValidError: ValidError | undefined,
-  formData: FormData
-) => {
+export const authorize = async (_preValidError: ValidError | undefined, formData: FormData) => {
   const zobj = z.object({
     email: z.email(),
-    passwd: z.string().min(6, 'More than 6 characters!'),
+    passwd: z.string().min(6, "More than 6 characters!"),
   });
   const [err, data] = validate(zobj, formData);
   if (err) return err;
 
   try {
-    const redirectTo = formData.get('redirectTo')?.toString() || '/bookcase';
-    console.log('🚀 ~ redirectTo:', redirectTo);
+    const redirectTo = formData.get("redirectTo")?.toString() || "/bookcase";
+    console.log("🚀 ~ redirectTo:", redirectTo);
     // await signIn('credentials', formData);
-    await signIn('credentials', { ...data, redirectTo });
+    await signIn("credentials", { ...data, redirectTo });
   } catch (error) {
-    console.log('🚀 sign.action.authorize - error:', error);
+    console.log("🚀 sign.action.authorize - error:", error);
     if (error instanceof AuthError) {
       let typeErr: string;
       switch (error.type) {
-        case 'AccessDenied':
-        case 'EmailSignInError':
-          typeErr = error.message.split('Read more')[0];
+        case "AccessDenied":
+        case "EmailSignInError":
+          typeErr = error.message.split("Read more")[0];
           break;
-        case 'OAuthAccountNotLinked':
+        case "OAuthAccountNotLinked":
           typeErr = `Already registed SNS Account`;
           break;
-        case 'CredentialsSignin':
-          typeErr =
-            error.message.split('Read more')[0] ||
-            'Not match Email or Password!';
+        case "CredentialsSignin":
+          typeErr = error.message.split("Read more")[0] || "Not match Email or Password!";
           break;
         default:
-          typeErr = error.message || 'Something went wrong!';
+          typeErr = error.message || "Something went wrong!";
       }
 
       return {
@@ -77,13 +71,10 @@ export const authorize = async (
 };
 
 export const logout = async () => {
-  await signOut({ redirectTo: '/' });
+  await signOut({ redirectTo: "/" });
 };
 
-export const regist = async (
-  _preValidError: ValidError | undefined,
-  formData: FormData
-) => {
+export const regist = async (_preValidError: ValidError | undefined, formData: FormData) => {
   const zobj = z
     .object({
       email: z.email(),
@@ -92,8 +83,8 @@ export const regist = async (
       nickname: z.string().min(3),
     })
     .refine(({ passwd, passwd2 }) => passwd === passwd2, {
-      path: ['passwd2'],
-      message: 'Passwords are not matched!',
+      path: ["passwd2"],
+      message: "Passwords are not matched!",
     });
 
   const [err, data] = validate(zobj, formData);
@@ -115,10 +106,7 @@ export const regist = async (
   redirect(`/sign/error?error=CheckEmail&email=${email}`);
 };
 
-export const sendResetPassword = async (
-  _: ValidError | undefined,
-  formData: FormData
-) => {
+export const sendResetPassword = async (_: ValidError | undefined, formData: FormData) => {
   const zobj = z.object({
     email: z.email(),
   });
@@ -137,18 +125,15 @@ export const sendResetPassword = async (
     email,
     emailcheck,
     nickname,
-    emailType: 'reset-password',
+    emailType: "reset-password",
   });
 
-  if (!rs.ok) return { email: { errors: ['Fail to send email!'] } };
+  if (!rs.ok) return { email: { errors: ["Fail to send email!"] } };
 
   redirect(`/sign/error?error=CheckEmail&email=${email}`);
 };
 
-export const resetPassword = async (
-  _: ValidError | undefined,
-  formData: FormData
-) => {
+export const resetPassword = async (_: ValidError | undefined, formData: FormData) => {
   const zobj = z
     .object({
       email: z.email(),
@@ -157,8 +142,8 @@ export const resetPassword = async (
       passwd2: z.string().min(6),
     })
     .refine(({ passwd, passwd2 }) => passwd === passwd2, {
-      path: ['passwd2'],
-      message: 'Not Match Passoword and Password confirm!',
+      path: ["passwd2"],
+      message: "Not Match Passoword and Password confirm!",
     });
 
   const [err, data] = validate(zobj, formData);
@@ -174,10 +159,7 @@ export const resetPassword = async (
   redirect(`/sign/error?error=Your password changed.`);
 };
 
-export const resendRegist = async (
-  _: ValidError | undefined,
-  formData: FormData
-) => {
+export const resendRegist = async (_: ValidError | undefined, formData: FormData) => {
   const zobj = z.object({
     email: z.email(),
     emailcheck: z.uuidv4(),
@@ -188,7 +170,7 @@ export const resendRegist = async (
   const { email, emailcheck } = data;
   const mbr = await findMemberByEmail(email);
   if (!mbr || mbr.emailcheck !== emailcheck) {
-    redirect('/sign/error?error=EmailSendFail');
+    redirect("/sign/error?error=EmailSendFail");
   }
 
   const newEmailCheck = newToken();
@@ -201,7 +183,7 @@ export const resendRegist = async (
     email,
     emailcheck: newEmailCheck,
   });
-  if (!rs.ok) return { email: { errors: ['Fail to send email!'] } };
+  if (!rs.ok) return { email: { errors: ["Fail to send email!"] } };
 
   redirect(`/sign/error?error=CheckEmail&email=${email}`);
 };
@@ -210,11 +192,11 @@ const sendmailByFetch = async ({
   email,
   emailcheck,
   nickname,
-  emailType = 'regist',
+  emailType = "regist",
 }: SendMailBody) => {
   const { NEXT_PUBLIC_URL, INTERNAL_SECRET } = process.env;
   return fetch(`${NEXT_PUBLIC_URL}/api/sendmail`, {
-    method: 'POST',
+    method: "POST",
     headers: {
       authorization: `Bearer ${INTERNAL_SECRET}`,
     },
@@ -224,7 +206,7 @@ const sendmailByFetch = async ({
 
 export const sendEmailChangeCode_일괄저장 = async (formData: FormData) => {
   const session = await auth();
-  if (!session?.user || !session.user.email) throw new Error('Need Login!');
+  if (!session?.user || !session.user.email) throw new Error("Need Login!");
 
   const { email } = session.user;
   const mbr = await findMemberByEmail(email);
@@ -239,12 +221,9 @@ export const sendEmailChangeCode_일괄저장 = async (formData: FormData) => {
     })
     .refine(
       ({ curr_passwd, passwd, passwd2 }) => {
-        return (
-          (!curr_passwd && !passwd && !passwd2) ||
-          (curr_passwd && passwd && passwd2)
-        );
+        return (!curr_passwd && !passwd && !passwd2) || (curr_passwd && passwd && passwd2);
       },
-      { path: ['passwd2'], message: 'Input the all password to change!' }
+      { path: ["passwd2"], message: "Input the all password to change!" },
     )
     .refine(({ curr_passwd, passwd, passwd2 }) => {
       if (curr_passwd && passwd && passwd2 && mbr?.passwd) {
@@ -254,7 +233,7 @@ export const sendEmailChangeCode_일괄저장 = async (formData: FormData) => {
     });
 
   const [err, data] = validate(zobj, formData);
-  console.log('🚀 ~ err data:', err, data);
+  console.log("🚀 ~ err data:", err, data);
   if (err) return err;
 
   const dataErr: ValidError = {};
@@ -269,13 +248,13 @@ export const sendEmailChangeCode_일괄저장 = async (formData: FormData) => {
       return {
         ...dataErr,
         curr_passwd: {
-          errors: ['Invalid current password!'],
+          errors: ["Invalid current password!"],
           value: curr_passwd,
         },
       };
   }
 
-  const existsErr = await existsEmail(newEmail, 'newEmail');
+  const existsErr = await existsEmail(newEmail, "newEmail");
   // console.log('****', { ...dataErr, ...existsErr });
   if (existsErr) return { ...dataErr, ...existsErr };
 
@@ -292,14 +271,14 @@ export const sendEmailChangeCode_일괄저장 = async (formData: FormData) => {
         data: { emailcheck: null },
       });
     },
-    2 * 60 * 1000
+    2 * 60 * 1000,
   );
 
   await sendmailByFetch({
     email,
     emailcheck,
     nickname,
-    emailType: 'email-change-code',
+    emailType: "email-change-code",
   });
 
   return dataErr;
@@ -308,16 +287,16 @@ export const sendEmailChangeCode_일괄저장 = async (formData: FormData) => {
 export type UpdateProfileImageReturn = ReturnType<typeof updateProfileImage>;
 export const updateProfileImage = async (formData: FormData) => {
   const session = await auth();
-  if (!session?.user || !session.user.email) throw new Error('Need Login!');
+  if (!session?.user || !session.user.email) throw new Error("Need Login!");
 
   const { id, email } = session.user;
   const ent = Object.fromEntries(formData.entries());
-  console.log('🚀 ~ ent:', ent);
+  console.log("🚀 ~ ent:", ent);
   const zobj = z.object({
     image: z
       .instanceof(File)
-      .refine(file => file.size <= 10 * 1024 * 1024, 'Under 10MB plz!')
-      .refine(file => file.type.startsWith('image/'), 'Upload Image only!'),
+      .refine((file) => file.size <= 10 * 1024 * 1024, "Under 10MB plz!")
+      .refine((file) => file.type.startsWith("image/"), "Upload Image only!"),
   });
 
   const [err, data] = validate(zobj, formData);
@@ -325,7 +304,7 @@ export const updateProfileImage = async (formData: FormData) => {
   // console.log('🚀 ~ data:', data);
   if (err) return [err];
 
-  const uploadDir = path.join(process.cwd(), 'public', 'profiles');
+  const uploadDir = path.join(process.cwd(), "public", "profiles");
   if (!existsSync(uploadDir)) mkdirSync(uploadDir);
 
   const fileName = `${id}_${uniqId()}_${data.image.name}`;
@@ -340,14 +319,14 @@ export const updateProfileImage = async (formData: FormData) => {
     data: { image },
   });
 
-  revalidatePath('/profiles');
+  revalidatePath("/profiles");
 
   return [null, mbr];
 };
 
 export const updateNickname = async (formData: FormData) => {
   const session = await auth();
-  if (!session?.user || !session.user.email) throw new Error('Need Login!');
+  if (!session?.user || !session.user.email) throw new Error("Need Login!");
 
   const { email } = session.user;
 
@@ -363,13 +342,13 @@ export const updateNickname = async (formData: FormData) => {
     where: { email },
     data: { nickname },
   });
-  console.log('🚀 ~ mbr:', mbr);
+  console.log("🚀 ~ mbr:", mbr);
   return [err, mbr] as const;
 };
 
 export const sendEmailChangeCode = async (formData: FormData) => {
   const session = await auth();
-  if (!session?.user || !session.user.email) throw new Error('Need Login!');
+  if (!session?.user || !session.user.email) throw new Error("Need Login!");
 
   const { email, name } = session.user;
 
@@ -380,7 +359,7 @@ export const sendEmailChangeCode = async (formData: FormData) => {
   if (err) return err;
 
   const { newEmail } = data;
-  const existsErr = await existsEmail(newEmail, 'newEmail');
+  const existsErr = await existsEmail(newEmail, "newEmail");
   if (existsErr) return existsErr;
 
   const emailcheck = uniqNumId();
@@ -396,28 +375,28 @@ export const sendEmailChangeCode = async (formData: FormData) => {
         data: { emailcheck: null },
       });
     },
-    2 * 60 * 1000
+    2 * 60 * 1000,
   );
 
   await sendmailByFetch({
     email: newEmail,
     emailcheck,
-    nickname: name || '',
-    emailType: 'email-change-code',
+    nickname: name || "",
+    emailType: "email-change-code",
   });
 };
 
 export const updateEmail = async (formData: FormData) => {
   const session = await auth();
-  if (!session?.user || !session.user.email) throw new Error('Need Login!');
+  if (!session?.user || !session.user.email) throw new Error("Need Login!");
 
-  console.log('****>>', Object.fromEntries(formData.entries()));
+  console.log("****>>", Object.fromEntries(formData.entries()));
   const { email } = session.user;
   const mbr = await findMemberByEmail(email);
   if (!mbr || !mbr.emailcheck || mbr.emailcheck.length !== 5) {
     return [
       {
-        emailChangeCode: { errors: ['Invalid Code!'] },
+        emailChangeCode: { errors: ["Invalid Code!"] },
       } as ValidError,
       null,
     ] as const;
@@ -429,24 +408,24 @@ export const updateEmail = async (formData: FormData) => {
     emailChangeCode: z.literal(mbr.emailcheck),
   });
   const [err, data] = validate(zobj, formData);
-  console.log('🚀 ~ err:', err);
+  console.log("🚀 ~ err:", err);
   if (err) return [err, null] as const;
 
   const { newEmail } = data;
-  const existsErr = await existsEmail(newEmail, 'newEmail');
+  const existsErr = await existsEmail(newEmail, "newEmail");
   if (existsErr) return [existsErr, null] as const;
 
   const newMbr = await prisma.member.update({
     where: { email },
     data: { email: newEmail, emailcheck: null },
   });
-  console.log('🚀 ~ newMbr:', newMbr);
+  console.log("🚀 ~ newMbr:", newMbr);
   return [null, newMbr] as const;
 };
 
 export const updatePassword = async (formData: FormData) => {
   const session = await auth();
-  if (!session?.user || !session.user.email) throw new Error('Need Login!');
+  if (!session?.user || !session.user.email) throw new Error("Need Login!");
 
   // console.log('****>>', Object.fromEntries(formData.entries()));
   const { email } = session.user;
@@ -462,22 +441,21 @@ export const updatePassword = async (formData: FormData) => {
       const preIssues = ctx.issues;
       ctx.issues = [];
 
-      const isMatchPassword = await comparePassword(
-        curr_passwd || '',
-        mbr?.passwd || ''
-      );
+      const isMatchPassword =
+        (mbr && !mbr.passwd) || (await comparePassword(curr_passwd, mbr?.passwd || ""));
+
       if (!isMatchPassword)
         ctx.addIssue({
-          code: 'custom',
-          message: 'Not Match the current password!',
-          path: ['curr_passwd'],
+          code: "custom",
+          message: "Not Match the current password!",
+          path: ["curr_passwd"],
         });
 
       if (passwd !== passwd2)
         ctx.addIssue({
-          code: 'custom',
-          message: 'Not Match the password confirm!',
-          path: ['passwd2'],
+          code: "custom",
+          message: "Not Match the password confirm!",
+          path: ["passwd2"],
         });
 
       ctx.issues = [...ctx.issues, ...preIssues];
@@ -496,11 +474,11 @@ export const updatePassword = async (formData: FormData) => {
 
 export const withdraw = async () => {
   const session = await auth();
-  if (!session?.user || !session.user.email) throw new Error('Need Login!');
+  if (!session?.user || !session.user.email) throw new Error("Need Login!");
 
   // console.log('****>>', Object.fromEntries(formData.entries()));
   const { email } = session.user;
-  const outdt = new Date().toISOString().split('T')[0];
+  const outdt = new Date().toISOString().split("T")[0];
   await prisma.member.update({
     where: { email },
     data: { outdt },
