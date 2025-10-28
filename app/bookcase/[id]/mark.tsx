@@ -51,25 +51,18 @@ export default function Mark({
     e.stopPropagation();
 
     const hasNow = type === "likes" ? iLiked() : iReported();
-    const state = type === "likes" ? likes : reports;
-    const setAction = type === "likes" ? setLikes : setReports;
-    const col = type === "likes" ? mark.Likes : mark.Report;
+    const col = type === "likes" ? likes : reports;
     const dbData = hasNow
       ? col.filter(({ member }) => member !== userId)
       : [...col, { member: userId }];
 
     startTransition(async () => {
       try {
-        if (hasNow) {
-          setAction(state.filter(({ member }) => member !== userId));
-        } else {
-          setAction([...state, { member: userId }]);
-        }
+        (type === "likes" ? setLikes : setReports)(dbData);
+        await toggleLikesOrReportMark(mark.id, type);
 
         if (type === "likes") mark.Likes = dbData;
         else mark.Report = dbData;
-
-        await toggleLikesOrReportMark(mark.id, type);
       } catch (error) {
         if (error instanceof Error) alert({ title: error.message });
         else alert({ title: JSON.stringify(error) });
