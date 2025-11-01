@@ -1,9 +1,9 @@
-import IconLabel from '@/components/icon-label';
-import ToolTip from '@/components/tool-tip';
-import { Button } from '@/components/ui/button';
-import { auth } from '@/lib/auth';
-import { findBookWithMarkById, type BookAllColumn } from '@/lib/db';
-import { cn } from '@/lib/utils';
+import IconLabel from "@/components/icon-label";
+import ToolTip from "@/components/tool-tip";
+import { Button } from "@/components/ui/button";
+import { auth } from "@/lib/auth";
+import { findBookWithMarkById, type BookAllColumn } from "@/lib/db";
+import { cn } from "@/lib/utils";
 import {
   AlbumIcon,
   BookKeyIcon,
@@ -12,11 +12,11 @@ import {
   MoreHorizontalIcon,
   PlusIcon,
   ThumbsUpIcon,
-} from 'lucide-react';
-import { use } from 'react';
-import BookDialog from './book-dialog';
-import FollowButton from './follow-button';
-import Mark from './mark';
+} from "lucide-react";
+import { use } from "react";
+import BookDialog from "./book-dialog";
+import FollowButton from "./follow-button";
+import Mark from "./mark";
 
 type Props =
   | { id: number; book?: undefined }
@@ -48,14 +48,14 @@ export default function Book({ id, book }: Props) {
       <div className="flex items-center justify-between pr-2">
         <h1
           className={cn(
-            'truncate p-2 font-semibold text-xl tracking-tighter',
+            "truncate p-2 font-semibold text-xl tracking-tighter",
             ispublic
-              ? 'text-green-500 text-shadow-green-300'
-              : 'text-muted-foreground text-shadow-gray-300',
+              ? "text-green-500 text-shadow-green-300"
+              : "text-muted-foreground text-shadow-gray-300",
           )}
           title={remark || title}
         >
-          {process.env.NODE_ENV === 'development' && (
+          {process.env.NODE_ENV === "development" && (
             <small className="text-muted-foreground">{bookId}</small>
           )}
           {!ispublic && <BookKeyIcon className="inline" />} {title}
@@ -64,7 +64,7 @@ export default function Book({ id, book }: Props) {
         {isMine ? (
           <BookDialog book={data}>
             <Button
-              variant={'ghost'}
+              variant={"ghost"}
               className="font-semibold text-lg hover:bg-slate-300"
             >
               <MoreHorizontalIcon />
@@ -87,7 +87,13 @@ export default function Book({ id, book }: Props) {
       <div className="max-h-fullxx space-y-2 overflow-y-scroll pr-2 pb-3">
         {marks.length ? (
           marks.map((mark) => (
-            <Mark key={mark.id} mark={mark} bookOwner={member} withdel={withdel} />
+            <Mark
+              key={mark.id}
+              mark={mark}
+              bookOwner={member}
+              followBooks={book?.FollowBook.length}
+              withdel={withdel}
+            />
           ))
         ) : (
           <h1 className="rounded-lg bg-white p-5 font-medium text-muted-foreground text-xl">
@@ -98,7 +104,7 @@ export default function Book({ id, book }: Props) {
       {isMine && (
         <div className="my-1 flex items-center justify-between pr-2 font-medium">
           <Button
-            variant={'ghost'}
+            variant={"ghost"}
             className="flex rounded-full font-semibold text-lg hover:bg-muted-foreground/30 dark:hover:bg-muted-foreground/30"
           >
             <PlusIcon /> Add a Mark
@@ -121,7 +127,7 @@ export default function Book({ id, book }: Props) {
             )}
 
             {withdel && (
-              <ToolTip content={'With Del'} variant="destructive">
+              <ToolTip content={"With Del"} variant="destructive">
                 <CopyXIcon className="text-red-500" />
               </ToolTip>
             )}

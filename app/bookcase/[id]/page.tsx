@@ -17,11 +17,12 @@ export default function BookcaseNickname({ params }: Props) {
   const { id } = use(params);
   const session = use(auth());
   // const userId = Number(session?.user.id);
-  const isMyBookcase = !!session?.user;
+  const isMyBookcase = session?.user.id === id;
   const mbr = use(findMemberByIdWithCount(id));
   if (!mbr) return <h1 className="text-2xl">User Not Found</h1>;
 
   const books = use(getAllBooksByMember(Number(id)));
+  // console.log('🚀 page books:', books);
 
   // books.forEach((book) => {
   //   book.Mark.forEach((mark) => {
@@ -34,7 +35,7 @@ export default function BookcaseNickname({ params }: Props) {
       <h1 className="flex items-center justify-between px-5 font-semibold text-2xl">
         <div className="flex items-center tracking-wider">
           {/* <UserAvatar id={id} withName={true} /> */}
-          {mbr && <UserAvatar member={mbr} withName={true} />}
+          {mbr && <UserAvatar member={mbr} withName={true} side="right" />}
           <span className="ml-2 font-medium text-green-600 tracking-tighter">
             Bookcase
           </span>
@@ -52,9 +53,15 @@ export default function BookcaseNickname({ params }: Props) {
 
       <div className="h-full overflow-x-scroll">
         <div className="flex gap-3 py-2">
-          {books.map((book) => (
-            <Book key={book.id} book={book} />
-          ))}
+          {books.length ? (
+            books.map((book) => <Book key={book.id} book={book} />)
+          ) : (
+            <h1 className="flex h-full w-72 flex-shrink-0 flex-col rounded-lg bg-slate-200 p-3 pl-2 text-xl dark:bg-muted">
+              <div className="rounded-lg bg-slate-50 p-3 text-center font-medium text-muted-foreground">
+                There is no Book.
+              </div>
+            </h1>
+          )}
 
           {isMyBookcase && (
             <BookDialog>

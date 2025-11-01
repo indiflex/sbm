@@ -25,7 +25,7 @@ export default function FollowButton({
       try {
         await toggleFollowBook(bookId, bookOwner);
       } catch (error) {
-        alert(undefined, error);
+        alert(null, error);
       }
     });
   };

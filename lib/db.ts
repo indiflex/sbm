@@ -1,7 +1,7 @@
-"only server";
+'only server';
 
 // export type { Book, Likes, Member } from '@/lib/generated/prisma/client';
-import { PrismaClient } from "@/lib/generated/prisma/client";
+import { PrismaClient } from '@/lib/generated/prisma/client';
 
 const newInstance = () => new PrismaClient();
 
@@ -65,7 +65,7 @@ export const findMemberByIdWithCount = async (id: number | string) =>
 export type BookAllColumn = Awaited<ReturnType<typeof findBookWithMarkById>>;
 export type BookData = Omit<
   NonNullable<BookAllColumn>,
-  "Mark" | "FollowBook" | "createdAt" | "updatedAt"
+  'Mark' | 'FollowBook' | 'createdAt' | 'updatedAt'
 >;
 
 export const findBookById = async (id: number) =>
@@ -84,6 +84,7 @@ export const findBookWithMarkById = async (id: number) =>
           Likes: { select: { member: true } },
           Report: { select: { member: true } },
           Talk: true,
+          Member: { select: { id: true, image: true, nickname: true } },
         },
       },
     },
@@ -91,7 +92,7 @@ export const findBookWithMarkById = async (id: number) =>
 
 // mark
 export type MarkAllColumn = NonNullable<Awaited<ReturnType<typeof findMarkWithCount>>>;
-export type MarkData = Omit<MarkAllColumn, "_count" | "createdAt" | "updatedAt">;
+export type MarkData = Omit<MarkAllColumn, '_count' | 'createdAt' | 'updatedAt'>;
 
 export const findMarkWithCount = async (id: number) =>
   prisma.mark.findUnique({
@@ -101,5 +102,6 @@ export const findMarkWithCount = async (id: number) =>
       Likes: { select: { member: true } },
       Report: { select: { member: true } },
       Talk: true,
+      Member: { select: { id: true, image: true, nickname: true } },
     },
   });

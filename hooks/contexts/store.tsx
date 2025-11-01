@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
 import {
   likesAndReports,
   toggleLikesOrReportMark,
-} from "@/app/bookcase/[id]/book.action";
-import type { MarkAllColumn } from "@/lib/db";
-import { useSession } from "next-auth/react";
+} from '@/app/bookcase/[id]/book.action';
+import type { MarkAllColumn } from '@/lib/db';
+import { useSession } from 'next-auth/react';
 import {
   createContext,
   type PropsWithChildren,
@@ -13,7 +13,7 @@ import {
   useCallback,
   useEffect,
   useState,
-} from "react";
+} from 'react';
 
 type ContextValueProps = {
   iLikedMarks: number[];
@@ -43,12 +43,12 @@ export function StoreProvider({ children }: PropsWithChildren) {
     setRepotedMarks(reports);
   }, []);
 
-  const toggleLikesOrReports = async (mark: MarkAllColumn, type: "likes" | "reports") => {
+  const toggleLikesOrReports = async (mark: MarkAllColumn, type: 'likes' | 'reports') => {
     const [state, setState] =
-      type === "likes" ? [iLikedMarks, setLikedMarks] : [iReportedMarks, setRepotedMarks];
+      type === 'likes' ? [iLikedMarks, setLikedMarks] : [iReportedMarks, setRepotedMarks];
 
     const hasNow = state.includes(mark.id);
-    await toggleLikesOrReportMark(mark.id, type);
+    await toggleLikesOrReportMark(mark.id, type, mark.maker);
     // if (type === "likes") mark._count.Likes += hasNow ? -1 : 1;
     // else mark._count.Report += hasNow ? -1 : 1;
 
@@ -56,8 +56,8 @@ export function StoreProvider({ children }: PropsWithChildren) {
     else setState([...state, mark.id]);
   };
 
-  const toggleLikes = (mark: MarkAllColumn) => toggleLikesOrReports(mark, "likes");
-  const toggleReports = (mark: MarkAllColumn) => toggleLikesOrReports(mark, "reports");
+  const toggleLikes = (mark: MarkAllColumn) => toggleLikesOrReports(mark, 'likes');
+  const toggleReports = (mark: MarkAllColumn) => toggleLikesOrReports(mark, 'reports');
 
   useEffect(() => {
     if (session?.user) {
