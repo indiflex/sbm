@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import IconLabelButton from "@/components/icon-label-button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import { useAlerter } from "@/hooks/contexts/alerter";
-import type { MarkAllColumn } from "@/lib/db";
+import IconLabelButton from '@/components/icon-label-button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
+import { useAlerter } from '@/hooks/contexts/alerter';
+import type { MarkAllColumn } from '@/lib/db';
 import {
   BookmarkXIcon,
   HatGlassesIcon,
   MessageCircleIcon,
   MoreHorizontalIcon,
   ThumbsUpIcon,
-} from "lucide-react";
-import { useSession } from "next-auth/react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useOptimistic, useTransition, type MouseEvent } from "react";
-import { deleteMark, toggleLikesOrReportMark } from "./book.action";
+} from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useOptimistic, useTransition, type MouseEvent } from 'react';
+import { deleteMark, toggleLikesOrReportMark } from './book.action';
 
 export default function Mark({
   mark,
@@ -32,7 +32,8 @@ export default function Mark({
   // const [likes, setLikes] = useState(mark.Likes);
   const [likes, setLikes] = useOptimistic(mark.Likes);
   const [reports, setReports] = useOptimistic(mark.Report);
-  const [isPending, startTransition] = useTransition();
+  const [isLikePending, startTransitionLike] = useTransition();
+  const [isReportPending, startTransitionReport] = useTransition();
 
   // const { iLikedMarks, iReportedMarks, toggleLikes, toggleReports } = useStore();
   // if (mark.id === 4)
@@ -45,24 +46,28 @@ export default function Mark({
 
   const likeOrReportMark = (
     e: MouseEvent<HTMLButtonElement>,
-    type: "likes" | "reports",
+    type: 'likes' | 'reports',
   ) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const hasNow = type === "likes" ? iLiked() : iReported();
-    const col = type === "likes" ? likes : reports;
+    const hasNow = type === 'likes' ? iLiked() : iReported();
+    const col = type === 'likes' ? likes : reports;
     const dbData = hasNow
       ? col.filter(({ member }) => member !== userId)
       : [...col, { member: userId }];
 
+    const startTransition =
+      type === 'likes' ? startTransitionLike : startTransitionReport;
+
     startTransition(async () => {
       try {
-        (type === "likes" ? setLikes : setReports)(dbData);
+        (type === 'likes' ? setLikes : setReports)(dbData);
         await toggleLikesOrReportMark(mark.id, type);
 
-        if (type === "likes") mark.Likes = dbData;
-        else mark.Report = dbData;
+        // if (type === "likes") mark.Likes = dbData;
+        // else mark.Report = dbData;
+        // router.refresh();
       } catch (error) {
         if (error instanceof Error) alert({ title: error.message });
         else alert({ title: JSON.stringify(error) });
@@ -70,8 +75,8 @@ export default function Mark({
     });
   };
 
-  const likeMark = (e: MouseEvent<HTMLButtonElement>) => likeOrReportMark(e, "likes");
-  const reportMark = (e: MouseEvent<HTMLButtonElement>) => likeOrReportMark(e, "reports");
+  const likeMark = (e: MouseEvent<HTMLButtonElement>) => likeOrReportMark(e, 'likes');
+  const reportMark = (e: MouseEvent<HTMLButtonElement>) => likeOrReportMark(e, 'reports');
 
   const openLinkTrigger = async () => {
     // 좋아요 한 마크는 바로삭제에서 제외!
@@ -98,7 +103,7 @@ export default function Mark({
         <div className="flex items-center gap-2">
           <Avatar className="h-16 w-auto max-w-[50%] rounded-lg group-hover:ring-2 group-hover:ring-primary">
             <AvatarImage
-              src={mark.image || "/site_dummy.jpg"}
+              src={mark.image || '/site_dummy.jpg'}
               className="aspect-auto size-auto"
             />
             <AvatarFallback className="w-full">
@@ -108,7 +113,7 @@ export default function Mark({
 
           <div className="flex flex-col overflow-hidden [&>*]:truncate">
             <h1 className="text-lg dark:text-black/70" title={mark.title}>
-              {process.env.NODE_ENV === "development" && (
+              {process.env.NODE_ENV === 'development' && (
                 <small className="text-muted-foreground">{mark.id}</small>
               )}
               {mark.title}
@@ -127,7 +132,7 @@ export default function Mark({
             // onClick={(e) => likeOrReportMark(e, "likes")}
             // isActive={iLikedMarks.includes(mark.id)}
             isActive={iLiked()}
-            disabled={isPending}
+            disabled={isLikePending}
           >
             {likes.length}
           </IconLabelButton>
@@ -139,7 +144,7 @@ export default function Mark({
             onClick={reportMark}
             isDanger
             isActive={iReported()}
-            disabled={isPending}
+            disabled={isReportPending}
           >
             {reports.length}
           </IconLabelButton>

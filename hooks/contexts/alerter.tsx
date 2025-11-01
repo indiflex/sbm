@@ -18,13 +18,7 @@ import {
   OctagonXIcon,
   TriangleAlertIcon,
 } from 'lucide-react';
-import {
-  createContext,
-  type PropsWithChildren,
-  use,
-  useRef,
-  useState,
-} from 'react';
+import { createContext, type PropsWithChildren, use, useRef, useState } from 'react';
 
 type AlertType = 'confirm' | 'alert' | 'prompt';
 
@@ -40,14 +34,14 @@ type Options = {
 
 type ContextValueProps = {
   confirm: (options: Options) => Promise<string>;
-  alert: (options: Options) => Promise<string>;
+  alert: (error?: unknown, options?: Options) => Promise<string>;
   prompt: (options: Options) => Promise<string>;
 };
 
 const AlerterContext = createContext<ContextValueProps>({
-  confirm: () => new Promise(resolve => resolve('')),
-  alert: () => new Promise(resolve => resolve('')),
-  prompt: () => new Promise(resolve => resolve('')),
+  confirm: () => new Promise((resolve) => resolve('')),
+  alert: () => new Promise((resolve) => resolve('')),
+  prompt: () => new Promise((resolve) => resolve('')),
 });
 
 export function AlerterProvider({ children }: PropsWithChildren) {
@@ -64,17 +58,13 @@ export function AlerterProvider({ children }: PropsWithChildren) {
   const variantIcon = () => {
     if (options?.type === 'prompt') return <CircleQuestionMarkIcon />;
     if (options?.variant === 'destructive')
-      return options?.type === 'confirm' ? (
-        <TriangleAlertIcon />
-      ) : (
-        <OctagonXIcon />
-      );
+      return options?.type === 'confirm' ? <TriangleAlertIcon /> : <OctagonXIcon />;
 
     return <CircleAlertIcon />;
   };
 
   const setup = (options: Options, type: AlertType) =>
-    new Promise<string>(resolve => {
+    new Promise<string>((resolve) => {
       setOptions({ ...options, type });
       setResolver(() => resolve);
       setOpen(true);
@@ -84,7 +74,14 @@ export function AlerterProvider({ children }: PropsWithChildren) {
   const makeResolver = (value: string) => setTimeout(resolver, 100, value);
 
   const confirm = (options: Options) => setup(options, 'confirm');
-  const alert = (options: Options) => setup(options, 'alert');
+  const alert = (error?: unknown, options?: Options) => {
+    return setup(
+      options
+        ? options
+        : { title: error instanceof Error ? error.message : JSON.stringify(error) },
+      'alert',
+    );
+  };
   const prompt = (options: Options) => setup(options, 'prompt');
 
   return (
@@ -92,7 +89,7 @@ export function AlerterProvider({ children }: PropsWithChildren) {
       {children}
 
       <AlertDialog open={isOpen} onOpenChange={setOpen}>
-        <AlertDialogContent className='w-80 translate-y-[-150px] sm:w-96'>
+        <AlertDialogContent className="w-80 translate-y-[-150px] sm:w-96">
           <AlertDialogHeader>
             <AlertDialogTitle
               className={cn('flex items-center gap-2', {
@@ -103,17 +100,11 @@ export function AlerterProvider({ children }: PropsWithChildren) {
               {options?.title}
             </AlertDialogTitle>
             {options?.description && (
-              <AlertDialogDescription>
-                {options.description}
-              </AlertDialogDescription>
+              <AlertDialogDescription>{options.description}</AlertDialogDescription>
             )}
           </AlertDialogHeader>
           {options?.type === 'prompt' && (
-            <Input
-              type='text'
-              ref={inputRef}
-              placeholder={options?.placeholder}
-            />
+            <Input type="text" ref={inputRef} placeholder={options?.placeholder} />
           )}
           <AlertDialogFooter>
             {options?.type !== 'alert' && (
@@ -124,19 +115,15 @@ export function AlerterProvider({ children }: PropsWithChildren) {
             <AlertDialogAction
               onClick={() =>
                 makeResolver(
-                  options?.type === 'prompt'
-                    ? (inputRef.current?.value ?? '')
-                    : 'OK'
+                  options?.type === 'prompt' ? (inputRef.current?.value ?? '') : 'OK',
                 )
               }
               className={cn(
                 options?.variant === 'destructive' &&
-                  'bg-destructive hover:bg-destructive/90 dark:bg-destructive/60'
+                  'bg-destructive hover:bg-destructive/90 dark:bg-destructive/60',
               )}
             >
-              {(options?.okText ?? options?.type === 'alert')
-                ? 'Confirm'
-                : 'Continue'}
+              {(options?.okText ?? options?.type === 'alert') ? 'Confirm' : 'Continue'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

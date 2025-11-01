@@ -1,16 +1,39 @@
-"use server";
+'use server';
 
-import { auth } from "@/lib/auth";
-import prisma from "@/lib/db";
-import { validate, validateAsync } from "@/lib/validator";
-import z from "zod";
+import { auth } from '@/lib/auth';
+import prisma from '@/lib/db';
+import { validate, validateAsync } from '@/lib/validator';
+import { revalidateTag, unstable_cache } from 'next/cache';
+import z from 'zod';
+
+export const getAllBooksByMember = async (member: number) =>
+  unstable_cache(
+    async () => {
+      // console.log('******* getAllBooksByMember>>', member);
+      return prisma.book.findMany({
+        where: { member },
+        include: {
+          FollowBook: { select: { member: true } },
+          Mark: {
+            include: {
+              Likes: { select: { member: true } },
+              Report: { select: { member: true } },
+              Talk: true,
+            },
+          },
+        },
+      });
+    },
+    [`member-books-${member}`], // ! cache-key
+    { tags: [`member-books-${member}`] }, // options
+  )();
 
 export const saveBook = async (formData: FormData) => {
   const user = await checkLogin();
 
   const member = Number(user.id);
 
-  console.log("🚀 ~ formData:", Object.fromEntries(formData.entries()));
+  console.log('🚀 ~ formData:', Object.fromEntries(formData.entries()));
 
   const zobj = z
     .object({
@@ -20,15 +43,15 @@ export const saveBook = async (formData: FormData) => {
       remark: z.string().optional(),
     })
     .refine(({ ispublic, withdel }) => !ispublic || (ispublic && !withdel), {
-      path: ["withdel"],
-      message: "Public book cannot have open with deletion!",
+      path: ['withdel'],
+      message: 'Public book cannot have open with deletion!',
     });
 
   const [err, data] = validate(zobj, formData);
   // console.log('🚀 ~ err:', err, data);
   if (err) return err;
 
-  const id = Number(formData.get("id"));
+  const id = Number(formData.get('id'));
   const { id: userId, isadmin } = user;
 
   if (id) {
@@ -36,7 +59,7 @@ export const saveBook = async (formData: FormData) => {
       where: isadmin ? { id } : { id, member: Number(userId) },
       data: {
         ...data,
-        ispublic: data.ispublic === "on",
+        ispublic: data.ispublic === 'on',
         withdel: !!data.withdel,
       },
     });
@@ -44,7 +67,7 @@ export const saveBook = async (formData: FormData) => {
     await prisma.book.create({
       data: {
         ...data,
-        ispublic: data.ispublic === "on",
+        ispublic: data.ispublic === 'on',
         withdel: !!data.withdel,
         member,
       },
@@ -54,7 +77,7 @@ export const saveBook = async (formData: FormData) => {
 
 const checkLogin = async () => {
   const session = await auth();
-  if (!session?.user || !session.user.id) throw new Error("Need Login");
+  if (!session?.user || !session.user.id) throw new Error('Need Login');
   return session.user;
 };
 
@@ -75,9 +98,9 @@ export const deleteBook = async (id: number) => {
 
       if (!book) {
         ctx.addIssue({
-          code: "custom",
+          code: 'custom',
           message: `This Book(#${id}) is not exists!`,
-          path: ["id"],
+          path: ['id'],
         });
       }
     });
@@ -108,7 +131,7 @@ export const likesAndReports = async (member: number) => {
 
 export const deleteMark = async (id: number, bookOwner: number) => {
   const { id: userId, isadmin } = await checkLogin();
-  console.log("🚀 ~ userId:", userId, id, bookOwner);
+  console.log('🚀 ~ userId:', userId, id, bookOwner);
 
   // check exists
   const mark = await prisma.mark.findUnique({
@@ -126,7 +149,7 @@ export const deleteMark = async (id: number, bookOwner: number) => {
 
 export const toggleLikesOrReportMark = async (
   mark: number,
-  type: "likes" | "reports",
+  type: 'likes' | 'reports',
 ) => {
   const { id: userId } = await checkLogin();
   const member = Number(userId);
@@ -139,17 +162,39 @@ export const toggleLikesOrReportMark = async (
   // if (mark === 4) throw new Error("XXXXXXXXXX");
 
   // select count(*) from Likes where mark = mark and member=userId
-  const likesCnt = await (type === "likes"
+  const likesCnt = await (type === 'likes'
     ? prisma.likes.count(where)
     : prisma.report.count(where));
 
   if (likesCnt > 0) {
-    return type === "likes"
-      ? prisma.likes.delete(whereMarkMember)
-      : prisma.report.delete(whereMarkMember);
+    type === 'likes'
+      ? await prisma.likes.delete(whereMarkMember)
+      : await prisma.report.delete(whereMarkMember);
   } else {
-    return type === "likes"
-      ? prisma.likes.create({ data })
-      : prisma.report.create({ data });
+    type === 'likes'
+      ? await prisma.likes.create({ data })
+      : await prisma.report.create({ data });
   }
+
+  revalidateTag(`member-books-${member}`);
+};
+
+export const toggleFollowBook = async (book: number, bookOwner: number) => {
+  const { id } = await checkLogin();
+  const member = Number(id);
+  const fb = await prisma.followBook.findUnique({
+    where: { book_member: { book, member } },
+  });
+
+  if (fb)
+    await prisma.followBook.delete({
+      where: { book_member: { book, member } },
+    });
+  else
+    await prisma.followBook.create({
+      data: { book, member },
+    });
+
+  revalidateTag(`books-member-${bookOwner}}`);
+  // revalidatePath(`/bookcase/${bookOwner}`);
 };

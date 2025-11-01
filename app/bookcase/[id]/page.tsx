@@ -1,12 +1,13 @@
-import IconLabel from "@/components/icon-label";
-import { Button } from "@/components/ui/button";
-import UserAvatar from "@/components/user-avatar";
-import { auth } from "@/lib/auth";
-import prisma, { findMemberByIdWithCount } from "@/lib/db";
-import { AlbumIcon, BookMarkedIcon, HeartPlusIcon, PlusIcon } from "lucide-react";
-import { use } from "react";
-import Book from "./book";
-import BookDialog from "./book-dialog";
+import IconLabel from '@/components/icon-label';
+import { Button } from '@/components/ui/button';
+import UserAvatar from '@/components/user-avatar';
+import { auth } from '@/lib/auth';
+import { findMemberByIdWithCount } from '@/lib/db';
+import { AlbumIcon, BookMarkedIcon, HeartPlusIcon, PlusIcon } from 'lucide-react';
+import { use } from 'react';
+import Book from './book';
+import BookDialog from './book-dialog';
+import { getAllBooksByMember } from './book.action';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -20,24 +21,7 @@ export default function BookcaseNickname({ params }: Props) {
   const mbr = use(findMemberByIdWithCount(id));
   if (!mbr) return <h1 className="text-2xl">User Not Found</h1>;
 
-  const books = use(
-    prisma.book.findMany({
-      where: { member: Number(id) },
-      include: {
-        FollowBook: { select: { member: true } },
-        Mark: {
-          include: {
-            // select count(*) from Likes where book = p.book;
-            // _count: { select: { Likes: true, Report: true, Talk: true } },
-            // Likes: true, // select * from Likes where mark = parent.mark;
-            Likes: { select: { member: true } },
-            Report: { select: { member: true } },
-            Talk: true,
-          },
-        },
-      },
-    }),
-  );
+  const books = use(getAllBooksByMember(Number(id)));
 
   // books.forEach((book) => {
   //   book.Mark.forEach((mark) => {
@@ -57,11 +41,11 @@ export default function BookcaseNickname({ params }: Props) {
         </div>
         <span className="flex gap-3 text-lg">
           <IconLabel icon={<BookMarkedIcon />}>{mbr._count.Book}</IconLabel>
-          <IconLabel icon={<AlbumIcon />} noti="muted">
+          <IconLabel icon={<AlbumIcon />} noti="secondary">
             {mbr._count.Mark}
           </IconLabel>
-          <IconLabel icon={<HeartPlusIcon />} noti="destructive">
-            50
+          <IconLabel icon={<HeartPlusIcon />} noti="success">
+            {books.reduce((acc, book) => acc + book.FollowBook.length, 0)}
           </IconLabel>
         </span>
       </h1>
@@ -75,7 +59,7 @@ export default function BookcaseNickname({ params }: Props) {
           {isMyBookcase && (
             <BookDialog>
               <Button
-                variant={"ghost"}
+                variant={'ghost'}
                 className="flex w-60 justify-start rounded-full bg-slate-200 font-semibold text-lg hover:bg-muted-foreground/30 dark:bg-muted dark:hover:bg-muted-foreground/30"
               >
                 <PlusIcon /> Add a Book
