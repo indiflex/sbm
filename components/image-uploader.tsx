@@ -3,8 +3,21 @@ import type { UpdateProfileImageReturn } from "@/app/sign/sign.action";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { type ChangeEvent, type FormEvent, useRef, useState, useTransition } from "react";
+import {
+  type ChangeEvent,
+  type FormEvent,
+  type ForwardedRef,
+  useImperativeHandle,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import Img from "./ui/img";
+
+export type ImageUploaderHandler = {
+  setSrc: (src: string | Blob | undefined) => void;
+  getSrc: () => string | Blob | undefined;
+};
 
 type Props = {
   // src: string | StaticImageData;
@@ -13,9 +26,16 @@ type Props = {
   // changeImage?: (formData: FormData) => UpdateProfileImageReturn;
   changeImage?: (formData: FormData) => unknown;
   isNotProfile?: boolean;
+  ref: ForwardedRef<ImageUploaderHandler>;
 };
 
-export default function ImageUploader({ src, alt, changeImage, isNotProfile }: Props) {
+export default function ImageUploader({
+  src,
+  alt,
+  changeImage,
+  isNotProfile,
+  ref,
+}: Props) {
   const { update } = useSession();
   const router = useRouter();
 
@@ -24,6 +44,13 @@ export default function ImageUploader({ src, alt, changeImage, isNotProfile }: P
   const formRef = useRef<HTMLFormElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [errorMsgs, setErrorMsgs] = useState<string[]>([]);
+
+  const handler: ImageUploaderHandler = {
+    setSrc: (src: string | Blob | undefined) => setImg(src),
+    getSrc: () => img,
+    // setSrc: setImg,
+  };
+  useImperativeHandle(ref, () => handler);
 
   const setImageFile = (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
@@ -110,7 +137,7 @@ export default function ImageUploader({ src, alt, changeImage, isNotProfile }: P
           src={img}
           alt={alt || ""}
           onClick={() => fileRef.current?.click()}
-          className="w-full rounded-full border object-fill"
+          className="h-full w-full rounded-full border object-cover"
           onError={() => setImg(dummyImage)}
         />
 

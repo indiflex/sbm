@@ -42,10 +42,13 @@ export default function UserAvatar({ member, withName, side }: Props) {
           <Button
             tabIndex={0}
             variant="link"
-            className="touch-none p-0 md:pointer-events-auto md:touch-auto"
+            className="h-full touch-none p-0 md:pointer-events-auto md:touch-auto"
           >
             <Avatar className="border">
-              <AvatarImage src={member.image || DummyProfileFile} />
+              <AvatarImage
+                src={member.image || DummyProfileFile}
+                className="h-full w-full object-cover"
+              />
               <AvatarFallback className="text-xl">
                 {member.nickname.substring(0, 2)}
               </AvatarFallback>

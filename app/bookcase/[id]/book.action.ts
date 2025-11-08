@@ -156,6 +156,7 @@ export const deleteMark = async (id: number, bookOwner: number) => {
   await prisma.mark.delete({
     where: { id },
   });
+  console.log("******>>", `member-books-${bookOwner}`);
   revalidateTag(`member-books-${bookOwner}`);
 };
 
@@ -237,11 +238,15 @@ export const saveMark = async (formData: FormData) => {
     });
 
   const [err, data] = validate(zobj, formData);
-  // console.log('🚀 ~ err:', err, data);
+
   // * `!book?.id` is for TS
-  if (err || !book?.id) return err;
+  if (err || !book?.id) {
+    console.log("🚀 saveMar - err:", err, data);
+    return err;
+  }
 
   const id = Number(formData.get("id"));
+  console.log("🚀 formData.mark.id:", id);
   const isBookOwner = book.member === maker;
 
   if (id) {

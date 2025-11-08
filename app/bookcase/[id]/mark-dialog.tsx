@@ -1,6 +1,6 @@
 "use client";
 
-import ImageUploader from "@/components/image-uploader";
+import ImageUploader, { type ImageUploaderHandler } from "@/components/image-uploader";
 import LabelInput from "@/components/label-input";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAlerter } from "@/hooks/contexts/alerter";
 import type { MarkData } from "@/lib/db";
 import type { ValidError } from "@/lib/validator";
+import { ZapIcon } from "lucide-react";
 import {
   useActionState,
   useRef,
@@ -54,13 +55,18 @@ export default function MarkDialog({
   const linkRef = useRef<HTMLInputElement>(null);
   const titleRef = useRef<HTMLInputElement>(null);
   const descriptRef = useRef<HTMLTextAreaElement>(null);
+  const imgUpRef = useRef<ImageUploaderHandler>(null);
 
   const [validError, save, isPending] = useActionState(
     async (_: ValidError | undefined, formData: FormData) => {
-      console.log("SAVE>>", formData);
+      console.log("SAVE>>", Object.fromEntries(formData.entries()));
       // formData.set('ispublic', ispublic ? 'on' : '');
 
       formData.set("id", String(mark.id));
+      formData.set("book", String(mark.book));
+      const img = imgUpRef.current?.getSrc();
+      if (img) formData.set("image", img);
+
       const err = await saveMark(formData);
       console.log("🚀 mark-dialog.err:", err);
       if (err) {
@@ -72,8 +78,14 @@ export default function MarkDialog({
     undefined,
   );
 
+  const formRef = useRef<HTMLFormElement>(null);
+  const callSave = () => {
+    formRef.current?.requestSubmit();
+  };
+
   const remove = async () => {
     const ret = await confirm({ title: "Are u sure??" });
+    console.log("🚀 remove ** ret:", ret);
     if (!ret) return;
 
     try {
@@ -91,6 +103,7 @@ export default function MarkDialog({
   };
 
   const click = (e: MouseEvent<HTMLButtonElement>) => {
+    console.log("eeeeeeeee>>", e);
     e.preventDefault();
     e.stopPropagation();
     setOpen(true);
@@ -103,13 +116,15 @@ export default function MarkDialog({
       return;
     }
 
-    if (!titleRef.current || !descriptRef.current) return;
-    console.log("🚀 ~ current:", titleRef.current, descriptRef.current);
+    if (!titleRef.current || !descriptRef.current || !imgUpRef.current) return;
 
-    const ogdata = await scrapOg(linkRef.current.value);
-    console.log("🚀 ~ ogdata:", ogdata);
-    if (ogdata.ogTitle) titleRef.current.value = ogdata.ogTitle;
-    if (ogdata.ogDescription) descriptRef.current.value = ogdata.ogDescription;
+    const { ogTitle, ogDescription, ogImage, favicon } = await scrapOg(
+      linkRef.current.value,
+    );
+
+    if (ogTitle) titleRef.current.value = ogTitle;
+    if (ogDescription) descriptRef.current.value = ogDescription;
+    if (ogImage?.length || favicon) imgUpRef.current.setSrc(ogImage?.[0]?.url || favicon);
   };
 
   return (
@@ -129,21 +144,23 @@ export default function MarkDialog({
               src={mark.image || `https://avatar.vercel.sh/${mark.title}`}
               alt={mark.title}
               changeImage={changeImage}
+              ref={imgUpRef}
             />
           </div>
 
           <div className="col-span-2 border p-3">
-            <form action={save}>
+            <form ref={formRef} action={save}>
               <div className="mt-5 space-y-5">
                 <InputGroup>
                   <InputGroupInput
+                    name={"link"}
                     ref={linkRef}
                     defaultValue={mark.link}
                     placeholder="Link(URL)..."
                   />
                   <InputGroupAddon align="inline-end">
-                    <InputGroupButton onClick={scrap} type="button" variant="secondary">
-                      Scrap
+                    <InputGroupButton onClick={scrap} type="button" variant="success">
+                      <ZapIcon />
                     </InputGroupButton>
                   </InputGroupAddon>
                 </InputGroup>
@@ -184,7 +201,7 @@ export default function MarkDialog({
             </Button>
           )}
 
-          <Button type="submit" disabled={isPending}>
+          <Button onClick={callSave} disabled={isPending}>
             {mark.id ? "Save" : "Create"} Mark
           </Button>
         </DialogFooter>
