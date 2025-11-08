@@ -1,24 +1,21 @@
-'use client';
-import type { UpdateProfileImageReturn } from '@/app/sign/sign.action';
-import { cn, DummyProfile } from '@/lib/utils';
-import { useSession } from 'next-auth/react';
-import Image, { type StaticImageData } from 'next/image';
-import { useRouter } from 'next/navigation';
-import {
-  type ChangeEvent,
-  type FormEvent,
-  useRef,
-  useState,
-  useTransition,
-} from 'react';
+"use client";
+import type { UpdateProfileImageReturn } from "@/app/sign/sign.action";
+import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { type ChangeEvent, type FormEvent, useRef, useState, useTransition } from "react";
+import Img from "./ui/img";
 
 type Props = {
-  src: string | StaticImageData;
+  // src: string | StaticImageData;
+  src: string | Blob | undefined;
   alt?: string;
-  changeImage?: (formData: FormData) => UpdateProfileImageReturn;
+  // changeImage?: (formData: FormData) => UpdateProfileImageReturn;
+  changeImage?: (formData: FormData) => unknown;
+  isNotProfile?: boolean;
 };
 
-export default function ImageUploader({ src, alt, changeImage }: Props) {
+export default function ImageUploader({ src, alt, changeImage, isNotProfile }: Props) {
   const { update } = useSession();
   const router = useRouter();
 
@@ -35,7 +32,7 @@ export default function ImageUploader({ src, alt, changeImage }: Props) {
 
   const setPreview = (file: File, needSubmit = false) => {
     const reader = new FileReader();
-    reader.onload = e => {
+    reader.onload = (e) => {
       // console.log('🚀 ~ e:', e.target?.result);
       if (e.target) setImg(e.target.result as string);
       if (needSubmit) formRef.current?.requestSubmit();
@@ -58,71 +55,78 @@ export default function ImageUploader({ src, alt, changeImage }: Props) {
       // const ent = Object.fromEntries(formData.entries());
       // console.log('🚀 ~ ent:', ent);
       if (!changeImage) return;
-      const [err, mbr] = await changeImage(formData);
-      // console.log('🚀 ~ err:', err);
-      // console.log('🚀 ~ mbr:', mbr);
-      if (err) {
-        console.log('ERROR>>', err, typeof err.image);
-        setImg(src);
-        if (typeof err.image === 'object' && err.image?.errors)
-          setErrorMsgs(err.image.errors);
-        return;
+
+      if (isNotProfile) {
+        changeImage(formData);
+      } else {
+        const [err, mbr] = (await changeImage(
+          formData,
+        )) as Awaited<UpdateProfileImageReturn>;
+
+        if (err) {
+          console.log("ERROR>>", err, typeof err.image);
+          setImg(src);
+          if (typeof err.image === "object" && err.image?.errors)
+            setErrorMsgs(err.image.errors);
+          return;
+        }
+
+        await update(mbr);
       }
-      await update(mbr);
       router.refresh();
     });
   };
 
+  const dummyImage = `https://avatar.vercel.sh/${alt || ""}`;
+
   return (
-    <form onSubmit={submitHandler} ref={formRef} className='w-full'>
+    <form onSubmit={submitHandler} ref={formRef} className="w-full">
       {/** biome-ignore lint/a11y/noStaticElementInteractions: file attach */}
       <div
-        onDragOver={e => {
+        onDragOver={(e) => {
           e.preventDefault();
           setDragging(true);
         }}
-        onDragLeave={e => {
+        onDragLeave={(e) => {
           e.preventDefault();
           setDragging(false);
         }}
-        onDrop={e => {
+        onDrop={(e) => {
           e.preventDefault();
           setDragging(false);
           const files = e.dataTransfer.files;
           if (files?.length) setPreview(files[0]);
 
           const formData = new FormData();
-          formData.append('image', files[0]);
+          formData.append("image", files[0]);
           uploadImage(formData);
         }}
         className={cn(
-          'relative aspect-square w-full cursor-pointer rounded-full border-2 shadow-sm',
-          { 'border-blue-500 border-dotted': isDragging }
+          "relative aspect-square w-full cursor-pointer rounded-full border-2 shadow-sm",
+          { "border-blue-500 border-dotted": isDragging },
         )}
       >
-        <Image
+        <Img
           src={img}
-          alt={alt || ''}
+          alt={alt || ""}
           onClick={() => fileRef.current?.click()}
-          className='rounded-full border'
-          fill
-          unoptimized={process.env.NODE_ENV === 'development'}
-          onError={() => setImg(DummyProfile)}
+          className="w-full rounded-full border object-fill"
+          onError={() => setImg(dummyImage)}
         />
 
         <input
-          type='file'
-          name='image'
+          type="file"
+          name="image"
           ref={fileRef}
-          accept='image/*'
+          accept="image/*"
           onChange={setImageFile}
           disabled={isPending}
           hidden
         />
       </div>
-      <div className=''>
-        {errorMsgs.map(emsg => (
-          <p key={emsg} className='text-red-500'>
+      <div className="">
+        {errorMsgs.map((emsg) => (
+          <p key={emsg} className="text-red-500">
             {emsg}
           </p>
         ))}
